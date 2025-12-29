@@ -29,22 +29,19 @@ class HomeScreen extends ConsumerWidget {
         data: (coupleInfo) => CustomScrollView(
           slivers: [
             // 顶部区域
-            SliverToBoxAdapter(
-              child: _buildHeader(context, ref, coupleInfo),
-            ),
+            SliverToBoxAdapter(child: _buildHeader(context, ref, coupleInfo)),
             // 功能入口
-            SliverToBoxAdapter(
-              child: _buildFeatureGrid(context),
-            ),
+            SliverToBoxAdapter(child: _buildFeatureGrid(context)),
             // 即将到来的纪念日
             if (upcomingAnniversaries.isNotEmpty)
               SliverToBoxAdapter(
-                child: _buildUpcomingAnniversaries(context, upcomingAnniversaries),
+                child: _buildUpcomingAnniversaries(
+                  context,
+                  upcomingAnniversaries,
+                ),
               ),
             // 底部间距
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 100),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
       ),
@@ -130,7 +127,10 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               // 恋爱天数
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 20,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.backgroundWhite.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
@@ -178,9 +178,8 @@ class HomeScreen extends ConsumerWidget {
                         child: const Text(
                           '点击设置恋爱开始日期',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             color: AppColors.textWhite,
-                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
@@ -228,10 +227,7 @@ class HomeScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '功能入口',
-            style: AppTextStyles.subtitle1,
-          ),
+          const Text('功能入口', style: AppTextStyles.subtitle1),
           const SizedBox(height: 16),
           GridView.builder(
             shrinkWrap: true,
@@ -266,11 +262,7 @@ class HomeScreen extends ConsumerWidget {
               color: feature.color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
-              feature.icon,
-              color: feature.color,
-              size: 28,
-            ),
+            child: Icon(feature.icon, color: feature.color, size: 28),
           ),
           const SizedBox(height: 8),
           Text(
@@ -296,10 +288,7 @@ class HomeScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                '即将到来',
-                style: AppTextStyles.subtitle1,
-              ),
+              const Text('即将到来', style: AppTextStyles.subtitle1),
               TextButton(
                 onPressed: () => context.go(AppRoutes.anniversary),
                 child: const Text('查看全部'),
@@ -307,7 +296,9 @@ class HomeScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ...anniversaries.take(3).map((anniversary) => _buildAnniversaryCard(anniversary)),
+          ...anniversaries
+              .take(3)
+              .map((anniversary) => _buildAnniversaryCard(anniversary)),
         ],
       ),
     );

@@ -71,6 +71,18 @@ class AlbumNotifier extends StateNotifier<AsyncValue<List<MediaItem>>> {
     return item;
   }
 
+  /// 录制并导入视频
+  Future<MediaItem?> recordAndImportVideo() async {
+    final xFile = await _mediaService.recordVideo();
+    if (xFile == null) return null;
+
+    final item = await _mediaService.importVideo(xFile);
+    if (item != null) {
+      await refresh();
+    }
+    return item;
+  }
+
   /// 删除媒体项
   Future<bool> deleteItem(MediaItem item) async {
     final success = await _mediaService.deleteMediaItem(item);

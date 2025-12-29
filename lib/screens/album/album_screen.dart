@@ -105,7 +105,7 @@ class AlbumScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
               const Text(
-                '添加照片',
+                '添加照片/视频',
                 style: AppTextStyles.subtitle1,
               ),
               const SizedBox(height: 20),
@@ -119,11 +119,28 @@ class AlbumScreen extends ConsumerWidget {
                   ),
                   child: const Icon(Icons.photo_library_rounded, color: AppColors.primary),
                 ),
-                title: const Text('从相册选择'),
+                title: const Text('从相册选择照片'),
                 subtitle: const Text('选择多张照片'),
                 onTap: () {
                   Navigator.pop(context);
                   _pickFromGallery(ref);
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLighter,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.videocam_rounded, color: AppColors.primary),
+                ),
+                title: const Text('从相册选择视频'),
+                subtitle: const Text('选择一个视频'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickVideo(ref);
                 },
               ),
               ListTile(
@@ -143,6 +160,23 @@ class AlbumScreen extends ConsumerWidget {
                   _takePhoto(ref);
                 },
               ),
+              ListTile(
+                leading: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLighter,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.video_camera_back_rounded, color: AppColors.primary),
+                ),
+                title: const Text('录制视频'),
+                subtitle: const Text('立即录制一段'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _recordVideo(ref);
+                },
+              ),
             ],
           ),
         ),
@@ -156,6 +190,14 @@ class AlbumScreen extends ConsumerWidget {
 
   Future<void> _takePhoto(WidgetRef ref) async {
     await ref.read(albumProvider.notifier).takePhotoAndImport();
+  }
+
+  Future<void> _pickVideo(WidgetRef ref) async {
+    await ref.read(albumProvider.notifier).pickAndImportVideo();
+  }
+
+  Future<void> _recordVideo(WidgetRef ref) async {
+    await ref.read(albumProvider.notifier).recordAndImportVideo();
   }
 }
 
@@ -194,13 +236,32 @@ class _MediaCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
-              // 图片
+              // 图片/视频缩略图
               SizedBox(
                 width: double.infinity,
                 height: clampedHeight,
                 child: _buildImage(),
               ),
-              // 视频标识
+              // 视频播放按钮（居中）
+              if (item.isVideo)
+                Positioned.fill(
+                  child: Center(
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
+                  ),
+                ),
+              // 视频标识（右上角）
               if (item.isVideo)
                 Positioned(
                   top: 8,
@@ -214,8 +275,8 @@ class _MediaCard extends StatelessWidget {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.play_arrow_rounded, color: Colors.white, size: 16),
-                        SizedBox(width: 2),
+                        Icon(Icons.videocam_rounded, color: Colors.white, size: 14),
+                        SizedBox(width: 4),
                         Text(
                           '视频',
                           style: TextStyle(color: Colors.white, fontSize: 10),

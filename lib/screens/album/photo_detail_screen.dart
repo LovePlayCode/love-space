@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/media_item.dart';
 import '../../providers/album_provider.dart';
@@ -22,6 +24,10 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
   bool _isLoading = true;
   final _captionController = TextEditingController();
   bool _isEditing = false;
+  
+  // 视频播放器
+  VideoPlayerController? _videoController;
+  ChewieController? _chewieController;
 
   @override
   void initState() {
@@ -32,6 +38,8 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
   @override
   void dispose() {
     _captionController.dispose();
+    _chewieController?.dispose();
+    _videoController?.dispose();
     super.dispose();
   }
 
@@ -49,6 +57,47 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
       _captionController.text = item?.caption ?? '';
       _isLoading = false;
     });
+    
+    // 如果是视频，初始化播放器
+    if (item != null && item.isVideo) {
+      _initVideoPlayer();
+    }
+  }
+  
+  Future<void> _initVideoPlayer() async {
+    if (_mediaItem == null || !_mediaItem!.isVideo) return;
+    
+    final file = File(_mediaItem!.localPath);
+    if (!file.existsSync()) return;
+    
+    _videoController = VideoPlayerController.file(file);
+    
+    try {
+      await _videoController!.initialize();
+      
+      _chewieController = ChewieController(
+        videoPlayerController: _videoController!,
+        autoPlay: false,
+        looping: false,
+        aspectRatio: _videoController!.value.aspectRatio,
+        placeholder: Container(
+          color: Colors.black,
+          child: const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
+        ),
+        materialProgressColors: ChewieProgressColors(
+          playedColor: AppColors.primary,
+          handleColor: AppColors.primary,
+          backgroundColor: Colors.white24,
+          bufferedColor: Colors.white38,
+        ),
+      );
+      
+      setState(() {});
+    } catch (e) {
+      debugPrint('Error initializing video player: $e');
+    }
   }
 
   @override
@@ -99,13 +148,15 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
       ),
       body: Stack(
         children: [
-          // 图片预览
+          // 图片/视频预览
           Center(
-            child: InteractiveViewer(
-              minScale: 0.5,
-              maxScale: 4.0,
-              child: _buildImage(),
-            ),
+            child: _mediaItem!.isVideo
+                ? _buildVideoPlayer()
+                : InteractiveViewer(
+                    minScale: 0.5,
+                    maxScale: 4.0,
+                    child: _buildImage(),
+                  ),
           ),
           // 底部信息
           Positioned(
@@ -117,6 +168,19 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
         ],
       ),
     );
+  }
+  
+  Widget _buildVideoPlayer() {
+    if (_chewieController == null || !_videoController!.value.isInitialized) {
+      return Container(
+        color: Colors.black,
+        child: const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+    
+    return Chewie(controller: _chewieController!);
   }
 
   Widget _buildImage() {
@@ -266,6 +330,9 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
   }
 
   void _showMoreOptions() {
+    final isVideo = _mediaItem?.isVideo ?? false;
+    final mediaType = isVideo ? '视频' : '照片';
+    
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.cardBackground,
@@ -289,7 +356,7 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
               const SizedBox(height: 20),
               ListTile(
                 leading: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
-                title: const Text('删除照片', style: TextStyle(color: AppColors.error)),
+                title: Text('删除$mediaType', style: const TextStyle(color: AppColors.error)),
                 onTap: () {
                   Navigator.pop(context);
                   _confirmDelete();
@@ -303,11 +370,14 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
   }
 
   void _confirmDelete() {
+    final isVideo = _mediaItem?.isVideo ?? false;
+    final mediaType = isVideo ? '视频' : '照片';
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('删除照片'),
-        content: const Text('确定要删除这张照片吗？此操作无法撤销。'),
+        title: Text('删除$mediaType'),
+        content: Text('确定要删除这${isVideo ? '个' : '张'}$mediaType吗？此操作无法撤销。'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
