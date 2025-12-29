@@ -101,8 +101,13 @@ class MediaService {
   }
 
   /// 将文件保存到应用沙盒目录
-  Future<String> saveFileToAppDir(File originalFile, {bool isVideo = false}) async {
-    final subDir = isVideo ? AppConstants.videoDirectory : AppConstants.imageDirectory;
+  Future<String> saveFileToAppDir(
+    File originalFile, {
+    bool isVideo = false,
+  }) async {
+    final subDir = isVideo
+        ? AppConstants.videoDirectory
+        : AppConstants.imageDirectory;
     final mediaDir = await _getMediaDirectory(subDir);
     final extension = p.extension(originalFile.path);
     final fileName = _generateFileName(extension);
@@ -118,10 +123,7 @@ class MediaService {
       final codec = await ui.instantiateImageCodec(bytes);
       final frame = await codec.getNextFrame();
       final image = frame.image;
-      return {
-        'width': image.width,
-        'height': image.height,
-      };
+      return {'width': image.width, 'height': image.height};
     } catch (e) {
       debugPrint('Error getting image size: $e');
       return {'width': 0, 'height': 0};
@@ -132,16 +134,16 @@ class MediaService {
   Future<MediaItem?> importImage(XFile xFile, {DateTime? takenDate}) async {
     try {
       final originalFile = File(xFile.path);
-      
+
       // 保存到沙盒目录
       final localPath = await saveFileToAppDir(originalFile);
-      
+
       // 获取图片尺寸
       final size = await getImageSize(localPath);
-      
+
       // 使用传入的日期或当前时间
       final date = takenDate ?? DateTime.now();
-      
+
       // 创建媒体项
       final mediaItem = MediaItem(
         type: AppConstants.mediaTypeImage,
@@ -150,10 +152,10 @@ class MediaService {
         width: size['width'],
         height: size['height'],
       );
-      
+
       // 保存到数据库
       final id = await _dbService.insertMediaItem(mediaItem);
-      
+
       return mediaItem.copyWith(id: id);
     } catch (e) {
       debugPrint('Error importing image: $e');
@@ -162,7 +164,10 @@ class MediaService {
   }
 
   /// 批量导入图片
-  Future<List<MediaItem>> importImages(List<XFile> xFiles, {DateTime? takenDate}) async {
+  Future<List<MediaItem>> importImages(
+    List<XFile> xFiles, {
+    DateTime? takenDate,
+  }) async {
     final List<MediaItem> items = [];
     for (final xFile in xFiles) {
       final item = await importImage(xFile, takenDate: takenDate);
@@ -177,23 +182,23 @@ class MediaService {
   Future<MediaItem?> importVideo(XFile xFile, {DateTime? takenDate}) async {
     try {
       final originalFile = File(xFile.path);
-      
+
       // 保存到沙盒目录
       final localPath = await saveFileToAppDir(originalFile, isVideo: true);
-      
+
       // 使用传入的日期或当前时间
       final date = takenDate ?? DateTime.now();
-      
+
       // 创建媒体项
       final mediaItem = MediaItem(
         type: AppConstants.mediaTypeVideo,
         localPath: localPath,
         takenDate: date.millisecondsSinceEpoch,
       );
-      
+
       // 保存到数据库
       final id = await _dbService.insertMediaItem(mediaItem);
-      
+
       return mediaItem.copyWith(id: id);
     } catch (e) {
       debugPrint('Error importing video: $e');
@@ -220,12 +225,12 @@ class MediaService {
     try {
       // 删除文件
       await deleteMediaFile(item.localPath);
-      
+
       // 删除数据库记录
       if (item.id != null) {
         await _dbService.deleteMediaItem(item.id!);
       }
-      
+
       return true;
     } catch (e) {
       debugPrint('Error deleting media item: $e');

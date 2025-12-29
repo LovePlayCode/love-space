@@ -203,13 +203,15 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
       body: Stack(
         children: [
           // 图片/视频预览
-          Center(
+          Positioned.fill(
             child: _mediaItem!.isVideo
                 ? _buildVideoPlayer()
-                : InteractiveViewer(
-                    minScale: 0.5,
-                    maxScale: 4.0,
-                    child: _buildImage(),
+                : Center(
+                    child: InteractiveViewer(
+                      minScale: 0.5,
+                      maxScale: 4.0,
+                      child: _buildImage(),
+                    ),
                   ),
           ),
           // 底部信息
@@ -227,58 +229,59 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
   Widget _buildVideoPlayer() {
     // 显示错误信息
     if (_videoError != null) {
-      return Container(
-        color: Colors.black,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline_rounded, color: Colors.white70, size: 64),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Text(
-                  _videoError!,
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
-                  textAlign: TextAlign.center,
-                ),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline_rounded, color: Colors.white70, size: 64),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                _videoError!,
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: _retryVideoLoad,
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('重试'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _retryVideoLoad,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('重试'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
     
     // 显示加载中
     if (!_videoInitialized || _chewieController == null) {
-      return Container(
-        color: Colors.black,
-        child: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(color: AppColors.primary),
-              SizedBox(height: 16),
-              Text(
-                '视频加载中...',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-            ],
-          ),
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: AppColors.primary),
+            SizedBox(height: 16),
+            Text(
+              '视频加载中...',
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+          ],
         ),
       );
     }
     
-    return Chewie(controller: _chewieController!);
+    return Center(
+      child: AspectRatio(
+        aspectRatio: _videoController!.value.aspectRatio,
+        child: Chewie(controller: _chewieController!),
+      ),
+    );
   }
   
   Future<void> _retryVideoLoad() async {

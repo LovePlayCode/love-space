@@ -82,10 +82,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             ),
             child: Column(
               children: [
-                const Text(
-                  '头像',
-                  style: AppTextStyles.subtitle2,
-                ),
+                const Text('头像', style: AppTextStyles.subtitle2),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -96,7 +93,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                       onTap: () => _pickAvatar(true),
                     ),
                     const SizedBox(width: 40),
-                    const Icon(Icons.favorite_rounded, color: AppColors.primary, size: 24),
+                    const Icon(
+                      Icons.favorite_rounded,
+                      color: AppColors.primary,
+                      size: 24,
+                    ),
                     const SizedBox(width: 40),
                     _buildAvatarPicker(
                       avatar: _partnerAvatar,
@@ -119,10 +120,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '昵称',
-                  style: AppTextStyles.subtitle2,
-                ),
+                const Text('昵称', style: AppTextStyles.subtitle2),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _myNicknameController,
@@ -153,10 +151,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '在一起的日子',
-                  style: AppTextStyles.subtitle2,
-                ),
+                const Text('在一起的日子', style: AppTextStyles.subtitle2),
                 const SizedBox(height: 16),
                 GestureDetector(
                   onTap: _selectStartDate,
@@ -169,7 +164,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.calendar_today_rounded, color: AppColors.primary),
+                        const Icon(
+                          Icons.calendar_today_rounded,
+                          color: AppColors.primary,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -184,7 +182,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                             ),
                           ),
                         ),
-                        const Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          color: AppColors.textHint,
+                        ),
                       ],
                     ),
                   ),
@@ -192,7 +193,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                 if (_startDate != null) ...[
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primaryLighter,
                       borderRadius: BorderRadius.circular(8),
@@ -200,7 +204,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.favorite_rounded, color: AppColors.primary, size: 16),
+                        const Icon(
+                          Icons.favorite_rounded,
+                          color: AppColors.primary,
+                          size: 16,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           '已经在一起 ${_calculateDays()} 天',
@@ -234,10 +242,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           onTap: onTap,
           child: Stack(
             children: [
-              AvatarWidget(
-                imagePath: avatar,
-                size: 80,
-              ),
+              AvatarWidget(imagePath: avatar, size: 80),
               Positioned(
                 right: 0,
                 bottom: 0,
@@ -247,7 +252,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.backgroundWhite, width: 2),
+                    border: Border.all(
+                      color: AppColors.backgroundWhite,
+                      width: 2,
+                    ),
                   ),
                   child: const Icon(
                     Icons.camera_alt_rounded,
@@ -262,10 +270,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 13,
-          ),
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
         ),
       ],
     );
@@ -275,7 +280,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     if (_startDate == null) return 0;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final start = DateTime(_startDate!.year, _startDate!.month, _startDate!.day);
+    final start = DateTime(
+      _startDate!.year,
+      _startDate!.month,
+      _startDate!.day,
+    );
     return today.difference(start).inDays + 1;
   }
 
@@ -339,10 +348,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
     try {
       final notifier = ref.read(coupleProvider.notifier);
-      
+
       await notifier.setMyNickname(myNickname);
       await notifier.setPartnerNickname(partnerNickname);
-      
+
       if (_myAvatar != null) {
         await notifier.setMyAvatar(_myAvatar!);
       }
@@ -368,10 +377,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('保存失败: $e'),
-            backgroundColor: AppColors.error,
-          ),
+          SnackBar(content: Text('保存失败: $e'), backgroundColor: AppColors.error),
         );
       }
     } finally {

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,8 @@ import '../../core/theme/app_decorations.dart';
 import '../../core/routes/app_router.dart';
 import '../../providers/couple_provider.dart';
 import '../../providers/anniversary_provider.dart';
+import '../../providers/album_provider.dart';
+import '../../models/media_item.dart';
 import '../../widgets/common/avatar_widget.dart';
 import '../../widgets/common/loading_widget.dart';
 
@@ -17,6 +20,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final coupleAsync = ref.watch(coupleProvider);
     final upcomingAnniversaries = ref.watch(upcomingAnniversariesProvider);
+    final albumAsync = ref.watch(albumProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -30,16 +34,17 @@ class HomeScreen extends ConsumerWidget {
           slivers: [
             // 顶部区域
             SliverToBoxAdapter(child: _buildHeader(context, ref, coupleInfo)),
-            // 功能入口
-            SliverToBoxAdapter(child: _buildFeatureGrid(context)),
             // 即将到来的纪念日
-            if (upcomingAnniversaries.isNotEmpty)
-              SliverToBoxAdapter(
-                child: _buildUpcomingAnniversaries(
-                  context,
-                  upcomingAnniversaries,
-                ),
+            SliverToBoxAdapter(
+              child: _buildUpcomingAnniversaries(
+                context,
+                upcomingAnniversaries,
               ),
+            ),
+            // 最近照片
+            SliverToBoxAdapter(
+              child: _buildRecentPhotos(context, albumAsync),
+            ),
             // 底部间距
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
@@ -158,7 +163,7 @@ class HomeScreen extends ConsumerWidget {
                             height: 1.0,
                           ),
                         ),
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(left: 8, bottom: 8),
                           child: Text(
                             '天',
@@ -194,94 +199,9 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildFeatureGrid(BuildContext context) {
-    final features = [
-      _FeatureItem(
-        icon: Icons.photo_library_rounded,
-        label: '时光相册',
-        color: const Color(0xFFFF8FA3),
-        onTap: () => context.go(AppRoutes.album),
-      ),
-      _FeatureItem(
-        icon: Icons.calendar_month_rounded,
-        label: '爱的日历',
-        color: const Color(0xFF6C9BCF),
-        onTap: () => context.go(AppRoutes.calendar),
-      ),
-      _FeatureItem(
-        icon: Icons.celebration_rounded,
-        label: '纪念日',
-        color: const Color(0xFFFFD93D),
-        onTap: () => context.go(AppRoutes.anniversary),
-      ),
-      _FeatureItem(
-        icon: Icons.settings_rounded,
-        label: '设置',
-        color: const Color(0xFF52C41A),
-        onTap: () => context.push(AppRoutes.settings),
-      ),
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('功能入口', style: AppTextStyles.subtitle1),
-          const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 0.85,
-            ),
-            itemCount: features.length,
-            itemBuilder: (context, index) {
-              final feature = features[index];
-              return _buildFeatureCard(feature);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureCard(_FeatureItem feature) {
-    return GestureDetector(
-      onTap: feature.onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: feature.color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(feature.icon, color: feature.color, size: 28),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            feature.label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildUpcomingAnniversaries(BuildContext context, List anniversaries) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -296,9 +216,17 @@ class HomeScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ...anniversaries
-              .take(3)
-              .map((anniversary) => _buildAnniversaryCard(anniversary)),
+          if (anniversaries.isEmpty)
+            _buildEmptyCard(
+              icon: Icons.celebration_rounded,
+              title: '暂无纪念日',
+              subtitle: '点击添加你们的重要日子',
+              onTap: () => context.go(AppRoutes.anniversary),
+            )
+          else
+            ...anniversaries
+                .take(3)
+                .map((anniversary) => _buildAnniversaryCard(anniversary)),
         ],
       ),
     );
@@ -372,18 +300,160 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
-}
 
-class _FeatureItem {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
+  Widget _buildRecentPhotos(BuildContext context, AsyncValue<List<MediaItem>> albumAsync) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('最近照片', style: AppTextStyles.subtitle1),
+              TextButton(
+                onPressed: () => context.go(AppRoutes.album),
+                child: const Text('查看全部'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          albumAsync.when(
+            loading: () => const SizedBox(
+              height: 120,
+              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+            ),
+            error: (_, __) => _buildEmptyCard(
+              icon: Icons.photo_library_rounded,
+              title: '加载失败',
+              subtitle: '点击重试',
+              onTap: () => context.go(AppRoutes.album),
+            ),
+            data: (items) {
+              if (items.isEmpty) {
+                return _buildEmptyCard(
+                  icon: Icons.photo_library_rounded,
+                  title: '暂无照片',
+                  subtitle: '点击添加你们的美好回忆',
+                  onTap: () => context.go(AppRoutes.album),
+                );
+              }
+              // 取最近6张
+              final recentItems = items.take(6).toList();
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 1,
+                ),
+                itemCount: recentItems.length,
+                itemBuilder: (context, index) {
+                  return _buildPhotoCard(context, recentItems[index]);
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
-  _FeatureItem({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
+  Widget _buildPhotoCard(BuildContext context, MediaItem item) {
+    return GestureDetector(
+      onTap: () => context.push('${AppRoutes.album}/detail/${item.id}'),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.file(
+                File(item.localPath),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: AppColors.divider,
+                  child: const Icon(Icons.broken_image_rounded, color: AppColors.textHint),
+                ),
+              ),
+              if (item.isVideo)
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        decoration: AppDecorations.cardDecorationSmall,
+        child: Center(
+          child: Column(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLighter,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(icon, color: AppColors.primary, size: 28),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textHint,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

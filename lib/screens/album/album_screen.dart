@@ -86,98 +86,101 @@ class AlbumScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.cardBackground,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                '添加照片/视频',
-                style: AppTextStyles.subtitle1,
-              ),
-              const SizedBox(height: 20),
-              ListTile(
-                leading: Container(
-                  width: 48,
-                  height: 48,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLighter,
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.divider,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  child: const Icon(Icons.photo_library_rounded, color: AppColors.primary),
                 ),
-                title: const Text('从相册选择照片'),
-                subtitle: const Text('选择多张照片'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickFromGallery(ref);
-                },
-              ),
-              ListTile(
-                leading: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLighter,
-                    borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 20),
+                const Text(
+                  '添加照片/视频',
+                  style: AppTextStyles.subtitle1,
+                ),
+                const SizedBox(height: 12),
+                ListTile(
+                  leading: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLighter,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.photo_library_rounded, color: AppColors.primary, size: 22),
                   ),
-                  child: const Icon(Icons.videocam_rounded, color: AppColors.primary),
+                  title: const Text('从相册选择照片'),
+                  subtitle: const Text('选择多张照片'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickFromGallery(ref);
+                  },
                 ),
-                title: const Text('从相册选择视频'),
-                subtitle: const Text('选择一个视频'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickVideo(ref);
-                },
-              ),
-              ListTile(
-                leading: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLighter,
-                    borderRadius: BorderRadius.circular(12),
+                ListTile(
+                  leading: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLighter,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.videocam_rounded, color: AppColors.primary, size: 22),
                   ),
-                  child: const Icon(Icons.camera_alt_rounded, color: AppColors.primary),
+                  title: const Text('从相册选择视频'),
+                  subtitle: const Text('选择一个视频'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickVideo(ref);
+                  },
                 ),
-                title: const Text('拍照'),
-                subtitle: const Text('立即拍摄一张'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _takePhoto(ref);
-                },
-              ),
-              ListTile(
-                leading: Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLighter,
-                    borderRadius: BorderRadius.circular(12),
+                ListTile(
+                  leading: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLighter,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.camera_alt_rounded, color: AppColors.primary, size: 22),
                   ),
-                  child: const Icon(Icons.video_camera_back_rounded, color: AppColors.primary),
+                  title: const Text('拍照'),
+                  subtitle: const Text('立即拍摄一张'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _takePhoto(ref);
+                  },
                 ),
-                title: const Text('录制视频'),
-                subtitle: const Text('立即录制一段'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _recordVideo(ref);
-                },
-              ),
-            ],
+                ListTile(
+                  leading: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLighter,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.video_camera_back_rounded, color: AppColors.primary, size: 22),
+                  ),
+                  title: const Text('录制视频'),
+                  subtitle: const Text('立即录制一段'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _recordVideo(ref);
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
