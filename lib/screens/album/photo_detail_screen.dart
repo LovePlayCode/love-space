@@ -28,6 +28,8 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
   // 视频播放器
   VideoPlayerController? _videoController;
   ChewieController? _chewieController;
+  bool _videoInitialized = false;
+  String? _videoError;
 
   @override
   void initState() {
@@ -38,6 +40,7 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
   @override
   void dispose() {
     _captionController.dispose();
+    _videoController?.removeListener(_videoListener);
     _chewieController?.dispose();
     _videoController?.dispose();
     super.dispose();
@@ -68,12 +71,32 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
     if (_mediaItem == null || !_mediaItem!.isVideo) return;
     
     final file = File(_mediaItem!.localPath);
-    if (!file.existsSync()) return;
+    debugPrint('[Video] 视频路径: ${_mediaItem!.localPath}');
+    debugPrint('[Video] 文件是否存在: ${file.existsSync()}');
+    
+    if (!file.existsSync()) {
+      setState(() {
+        _videoError = '视频文件不存在';
+        _videoInitialized = true;
+      });
+      return;
+    }
+    
+    // 获取文件大小用于调试
+    final fileSize = await file.length();
+    debugPrint('[Video] 文件大小: ${(fileSize / 1024 / 1024).toStringAsFixed(2)} MB');
     
     _videoController = VideoPlayerController.file(file);
     
+    // 添加错误监听
+    _videoController!.addListener(_videoListener);
+    
     try {
+      debugPrint('[Video] 开始初始化播放器...');
       await _videoController!.initialize();
+      debugPrint('[Video] 播放器初始化成功');
+      debugPrint('[Video] 视频尺寸: ${_videoController!.value.size}');
+      debugPrint('[Video] 视频时长: ${_videoController!.value.duration}');
       
       _chewieController = ChewieController(
         videoPlayerController: _videoController!,
@@ -92,11 +115,42 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
           backgroundColor: Colors.white24,
           bufferedColor: Colors.white38,
         ),
+        errorBuilder: (context, errorMessage) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  errorMessage,
+                  style: const TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        },
       );
       
-      setState(() {});
+      setState(() {
+        _videoInitialized = true;
+      });
     } catch (e) {
-      debugPrint('Error initializing video player: $e');
+      debugPrint('[Video] 播放器初始化失败: $e');
+      setState(() {
+        _videoError = '视频加载失败: $e';
+        _videoInitialized = true;
+      });
+    }
+  }
+  
+  void _videoListener() {
+    if (_videoController != null && _videoController!.value.hasError) {
+      debugPrint('[Video] 播放错误: ${_videoController!.value.errorDescription}');
+      setState(() {
+        _videoError = _videoController!.value.errorDescription ?? '视频播放出错';
+      });
     }
   }
 
@@ -171,16 +225,77 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
   }
   
   Widget _buildVideoPlayer() {
-    if (_chewieController == null || !_videoController!.value.isInitialized) {
+    // 显示错误信息
+    if (_videoError != null) {
+      return Container(
+        color: Colors.black,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline_rounded, color: Colors.white70, size: 64),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  _videoError!,
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: _retryVideoLoad,
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('重试'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    // 显示加载中
+    if (!_videoInitialized || _chewieController == null) {
       return Container(
         color: Colors.black,
         child: const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: AppColors.primary),
+              SizedBox(height: 16),
+              Text(
+                '视频加载中...',
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ],
+          ),
         ),
       );
     }
     
     return Chewie(controller: _chewieController!);
+  }
+  
+  Future<void> _retryVideoLoad() async {
+    // 清理旧的控制器
+    _videoController?.removeListener(_videoListener);
+    _chewieController?.dispose();
+    _videoController?.dispose();
+    
+    setState(() {
+      _videoController = null;
+      _chewieController = null;
+      _videoInitialized = false;
+      _videoError = null;
+    });
+    
+    // 重新初始化
+    await _initVideoPlayer();
   }
 
   Widget _buildImage() {
