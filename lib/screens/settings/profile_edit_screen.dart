@@ -8,6 +8,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../providers/couple_provider.dart';
 import '../../services/media_service.dart';
 import '../../widgets/common/avatar_widget.dart';
+import '../../widgets/common/toast_utils.dart';
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
   const ProfileEditScreen({super.key});
@@ -335,12 +336,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     final partnerNickname = _partnerNicknameController.text.trim();
 
     if (myNickname.isEmpty || partnerNickname.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('请填写昵称'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      ToastUtils.showError(context, '请填写昵称');
       return;
     }
 
@@ -365,20 +361,12 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       await notifier.refresh();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('保存成功'),
-            backgroundColor: AppColors.success,
-            duration: Duration(seconds: 1),
-          ),
-        );
+        ToastUtils.showSuccess(context, '保存成功');
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败: $e'), backgroundColor: AppColors.error),
-        );
+        ToastUtils.showError(context, '保存失败: $e');
       }
     } finally {
       if (mounted) {
