@@ -8,26 +8,134 @@ import '../../core/theme/app_text_styles.dart';
 import '../../models/media_item.dart';
 import '../../providers/album_provider.dart';
 import '../../widgets/common/loading_widget.dart';
+import '../../widgets/common/toast_utils.dart';
 import 'package:intl/intl.dart';
 
-class AlbumScreen extends ConsumerWidget {
+class AlbumScreen extends ConsumerStatefulWidget {
   const AlbumScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AlbumScreen> createState() => _AlbumScreenState();
+}
+
+class _AlbumScreenState extends ConsumerState<AlbumScreen> {
+  bool _isSelectionMode = false;
+  final Set<int> _selectedIds = {};
+
+  void _toggleSelectionMode() {
+    setState(() {
+      _isSelectionMode = !_isSelectionMode;
+      if (!_isSelectionMode) {
+        _selectedIds.clear();
+      }
+    });
+  }
+
+  void _toggleSelection(int id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+    });
+  }
+
+  void _selectAll(List<MediaItem> items) {
+    setState(() {
+      _selectedIds.clear();
+      _selectedIds.addAll(items.where((e) => e.id != null).map((e) => e.id!));
+    });
+  }
+
+  Future<void> _deleteSelected() async {
+    if (_selectedIds.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: Text('确定要删除选中的 ${_selectedIds.length} 项吗？此操作不可恢复。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final albumNotifier = ref.read(albumProvider.notifier);
+    final currentItems = ref.read(albumProvider).valueOrNull ?? [];
+    
+    int successCount = 0;
+    for (final id in _selectedIds) {
+      final item = currentItems.firstWhere(
+        (e) => e.id == id,
+        orElse: () => currentItems.first,
+      );
+      if (item.id == id) {
+        final success = await albumNotifier.deleteItem(item);
+        if (success) successCount++;
+      }
+    }
+
+    if (mounted) {
+      ToastUtils.showSuccess(context, '已删除 $successCount 项');
+      _toggleSelectionMode();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final albumAsync = ref.watch(albumProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('时光相册'),
+        title: _isSelectionMode
+            ? Text('已选择 ${_selectedIds.length} 项')
+            : const Text('时光相册'),
         backgroundColor: AppColors.background,
-        actions: [
-          IconButton(
-            onPressed: () => _showAddOptions(context, ref),
-            icon: const Icon(Icons.add_photo_alternate_rounded),
-          ),
-        ],
+        leading: _isSelectionMode
+            ? IconButton(
+                onPressed: _toggleSelectionMode,
+                icon: const Icon(Icons.close_rounded),
+              )
+            : null,
+        actions: _isSelectionMode
+            ? [
+                albumAsync.whenOrNull(
+                  data: (items) => TextButton(
+                    onPressed: () => _selectAll(items),
+                    child: const Text('全选'),
+                  ),
+                ) ?? const SizedBox(),
+                IconButton(
+                  onPressed: _selectedIds.isEmpty ? null : _deleteSelected,
+                  icon: Icon(
+                    Icons.delete_rounded,
+                    color: _selectedIds.isEmpty ? AppColors.textHint : AppColors.error,
+                  ),
+                ),
+              ]
+            : [
+                IconButton(
+                  onPressed: () => _toggleSelectionMode(),
+                  icon: const Icon(Icons.checklist_rounded),
+                ),
+                IconButton(
+                  onPressed: () => _showAddOptions(context, ref),
+                  icon: const Icon(Icons.add_photo_alternate_rounded),
+                ),
+              ],
       ),
       body: albumAsync.when(
         loading: () => const LoadingWidget(),
@@ -42,11 +150,13 @@ class AlbumScreen extends ConsumerWidget {
           return _buildWaterfallGrid(context, ref, mediaItems);
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddOptions(context, ref),
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add_rounded, color: AppColors.textWhite),
-      ),
+      floatingActionButton: _isSelectionMode
+          ? null
+          : FloatingActionButton(
+              onPressed: () => _showAddOptions(context, ref),
+              backgroundColor: AppColors.primary,
+              child: const Icon(Icons.add_rounded, color: AppColors.textWhite),
+            ),
     );
   }
 
@@ -73,9 +183,25 @@ class AlbumScreen extends ConsumerWidget {
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
+          final itemId = item.id;
+          final isSelected = itemId != null && _selectedIds.contains(itemId);
           return _MediaCard(
             item: item,
-            onTap: () => context.push('/album/photo/${item.id}'),
+            isSelectionMode: _isSelectionMode,
+            isSelected: isSelected,
+            onTap: () {
+              if (_isSelectionMode) {
+                if (itemId != null) _toggleSelection(itemId);
+              } else {
+                context.push('/album/photo/${item.id}');
+              }
+            },
+            onLongPress: () {
+              if (!_isSelectionMode && itemId != null) {
+                _toggleSelectionMode();
+                _toggleSelection(itemId);
+              }
+            },
           );
         },
       ),
@@ -207,10 +333,16 @@ class AlbumScreen extends ConsumerWidget {
 class _MediaCard extends StatelessWidget {
   final MediaItem item;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
+  final bool isSelectionMode;
+  final bool isSelected;
 
   const _MediaCard({
     required this.item,
     required this.onTap,
+    this.onLongPress,
+    this.isSelectionMode = false,
+    this.isSelected = false,
   });
 
   @override
@@ -223,10 +355,14 @@ class _MediaCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(16),
+          border: isSelected
+              ? Border.all(color: AppColors.primary, width: 3)
+              : null,
           boxShadow: [
             BoxShadow(
               color: AppColors.shadowColorLight,
@@ -236,7 +372,7 @@ class _MediaCard extends StatelessWidget {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(isSelected ? 13 : 16),
           child: Stack(
             children: [
               // 图片/视频缩略图
@@ -245,6 +381,24 @@ class _MediaCard extends StatelessWidget {
                 height: clampedHeight,
                 child: _buildImage(),
               ),
+              // 选择模式下的勾选框
+              if (isSelectionMode)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.primary : Colors.black38,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: isSelected
+                        ? const Icon(Icons.check, color: Colors.white, size: 16)
+                        : null,
+                  ),
+                ),
               // 视频播放按钮（居中）
               if (item.isVideo)
                 Positioned.fill(
