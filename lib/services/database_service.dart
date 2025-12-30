@@ -83,6 +83,7 @@ class DatabaseService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
         color TEXT,
+        icon TEXT,
         created_at INTEGER NOT NULL
       )
     ''');
@@ -132,13 +133,28 @@ class DatabaseService {
       await db.execute('CREATE INDEX IF NOT EXISTS idx_media_tags_media_id ON media_tags(media_id)');
       await db.execute('CREATE INDEX IF NOT EXISTS idx_media_tags_tag_id ON media_tags(tag_id)');
     }
+    if (oldVersion < 4) {
+      // 添加标签 icon 字段
+      await db.execute('ALTER TABLE tags ADD COLUMN icon TEXT');
+    }
   }
 
   // ==================== MediaItem 操作 ====================
 
-  /// 插入媒体项
+  /// 插入媒体项（如果 localPath 已存在则跳过）
   Future<int> insertMediaItem(MediaItem item) async {
     final db = await database;
+    // 检查是否已存在相同路径的媒体
+    final existing = await db.query(
+      'media_items',
+      where: 'local_path = ?',
+      whereArgs: [item.localPath],
+      limit: 1,
+    );
+    if (existing.isNotEmpty) {
+      // 已存在，返回已有的 id
+      return existing.first['id'] as int;
+    }
     return await db.insert('media_items', item.toMap());
   }
 

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,6 +14,7 @@ import 'database_service.dart';
 /// 媒体服务 - 管理照片和视频的导入、存储
 class MediaService {
   final DatabaseService _dbService = DatabaseService();
+  final Random _random = Random();
   final ImagePicker _picker = ImagePicker();
 
   /// 获取应用媒体存储目录
@@ -27,12 +29,13 @@ class MediaService {
 
   /// 生成唯一文件名
   String _generateFileName(String extension) {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    return '$timestamp$extension';
+    final timestamp = DateTime.now().microsecondsSinceEpoch;
+    final randomSuffix = _random.nextInt(99999).toString().padLeft(5, '0');
+    return '${timestamp}_$randomSuffix$extension';
   }
 
   /// 从相册选择图片（不压缩，快速返回）
-  Future<List<XFile>> pickImages({int maxImages = 9}) async {
+  Future<List<XFile>> pickImages({int maxImages = 100}) async {
     try {
       final List<XFile> images = await _picker.pickMultiImage(
         // 不设置压缩参数，快速返回原始路径

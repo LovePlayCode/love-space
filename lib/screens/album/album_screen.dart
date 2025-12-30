@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/constants/tag_icons.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/media_item.dart';
@@ -903,7 +904,7 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
-                        Icons.label_rounded,
+                        TagIcons.getIcon(tag.icon) ?? Icons.label_rounded,
                         color: _getTagColor(tag.color),
                         size: 18,
                       ),
@@ -954,67 +955,190 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
 
   void _showCreateTagDialog(BuildContext context) {
     _newTagController.clear();
+    String? selectedIcon;
+    String? selectedColor;
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('新建标签'),
-        content: TextField(
-          controller: _newTagController,
-          decoration: const InputDecoration(
-            hintText: '输入标签名称',
-            border: OutlineInputBorder(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('新建标签'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: _newTagController,
+                  decoration: const InputDecoration(
+                    hintText: '输入标签名称',
+                    border: OutlineInputBorder(),
+                  ),
+                  autofocus: true,
+                ),
+                const SizedBox(height: 16),
+                const Text('选择图标', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
+                _buildIconSelector(
+                  selectedIcon: selectedIcon,
+                  selectedColor: selectedColor,
+                  onIconSelected: (icon) {
+                    setDialogState(() => selectedIcon = icon);
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Text('选择颜色', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
+                _buildColorSelector(
+                  selectedColor: selectedColor,
+                  onColorSelected: (color) {
+                    setDialogState(() => selectedColor = color);
+                  },
+                ),
+              ],
+            ),
           ),
-          autofocus: true,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final name = _newTagController.text.trim();
+                if (name.isNotEmpty) {
+                  await ref.read(tagProvider.notifier).createTag(
+                    name,
+                    color: selectedColor,
+                    icon: selectedIcon,
+                  );
+                  if (context.mounted) Navigator.pop(context);
+                }
+              },
+              child: const Text('创建'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final name = _newTagController.text.trim();
-              if (name.isNotEmpty) {
-                await ref.read(tagProvider.notifier).createTag(name);
-                if (context.mounted) Navigator.pop(context);
-              }
-            },
-            child: const Text('创建'),
-          ),
-        ],
       ),
     );
   }
 
+  Widget _buildIconSelector({
+    String? selectedIcon,
+    String? selectedColor,
+    required Function(String?) onIconSelected,
+  }) {
+    final color = _getTagColor(selectedColor);
+    final iconCodes = TagIcons.allIconCodes;
+    return SizedBox(
+      height: 200,
+      child: SingleChildScrollView(
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: iconCodes.map((iconCode) {
+            final icon = TagIcons.getIcon(iconCode);
+            final isSelected = selectedIcon == iconCode;
+            return GestureDetector(
+              onTap: () => onIconSelected(iconCode),
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: isSelected ? color.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: isSelected ? Border.all(color: color, width: 2) : null,
+                ),
+                child: Icon(
+                  icon,
+                  size: 18,
+                  color: isSelected ? color : AppColors.textSecondary,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildColorSelector({
+    String? selectedColor,
+    required Function(String?) onColorSelected,
+  }) {
+    const colors = [
+      '#FF5722', // 深橙
+      '#E91E63', // 粉红
+      '#9C27B0', // 紫色
+      '#673AB7', // 深紫
+      '#3F51B5', // 靛蓝
+      '#2196F3', // 蓝色
+      '#00BCD4', // 青色
+      '#009688', // 蓝绿
+      '#4CAF50', // 绿色
+      '#8BC34A', // 浅绿
+      '#FF9800', // 橙色
+      '#795548', // 棕色
+    ];
+    
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: colors.map((colorHex) {
+        final color = Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
+        final isSelected = selectedColor == colorHex;
+        return GestureDetector(
+          onTap: () => onColorSelected(colorHex),
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              border: isSelected ? Border.all(color: Colors.white, width: 3) : null,
+              boxShadow: isSelected
+                  ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 8)]
+                  : null,
+            ),
+            child: isSelected
+                ? const Icon(Icons.check, color: Colors.white, size: 20)
+                : null,
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   void _showTagOptionsDialog(BuildContext context, Tag tag) {
+    final outerContext = context;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(tag.name),
         content: const Text('选择操作'),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              _showEditTagDialog(context, tag);
+              Navigator.pop(dialogContext);
+              _showEditTagDialog(outerContext, tag);
             },
             child: const Text('编辑'),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
+                context: outerContext,
+                builder: (confirmContext) => AlertDialog(
                   title: const Text('确认删除'),
                   content: Text('确定要删除标签"${tag.name}"吗？'),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context, false),
+                      onPressed: () => Navigator.pop(confirmContext, false),
                       child: const Text('取消'),
                     ),
                     TextButton(
-                      onPressed: () => Navigator.pop(context, true),
+                      onPressed: () => Navigator.pop(confirmContext, true),
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.error,
                       ),
@@ -1045,36 +1169,72 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
 
   void _showEditTagDialog(BuildContext context, Tag tag) {
     _newTagController.text = tag.name;
+    String? selectedIcon = tag.icon;
+    String? selectedColor = tag.color;
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('编辑标签'),
-        content: TextField(
-          controller: _newTagController,
-          decoration: const InputDecoration(
-            hintText: '输入标签名称',
-            border: OutlineInputBorder(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('编辑标签'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: _newTagController,
+                  decoration: const InputDecoration(
+                    hintText: '输入标签名称',
+                    border: OutlineInputBorder(),
+                  ),
+                  autofocus: true,
+                ),
+                const SizedBox(height: 16),
+                const Text('选择图标', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
+                _buildIconSelector(
+                  selectedIcon: selectedIcon,
+                  selectedColor: selectedColor,
+                  onIconSelected: (icon) {
+                    setDialogState(() => selectedIcon = icon);
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Text('选择颜色', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
+                _buildColorSelector(
+                  selectedColor: selectedColor,
+                  onColorSelected: (color) {
+                    setDialogState(() => selectedColor = color);
+                  },
+                ),
+              ],
+            ),
           ),
-          autofocus: true,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final name = _newTagController.text.trim();
+                if (name.isNotEmpty) {
+                  await ref.read(tagProvider.notifier).updateTag(
+                    tag.copyWith(
+                      name: name,
+                      color: selectedColor,
+                      icon: selectedIcon,
+                    ),
+                  );
+                  if (context.mounted) Navigator.pop(context);
+                }
+              },
+              child: const Text('保存'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final name = _newTagController.text.trim();
-              if (name.isNotEmpty) {
-                await ref
-                    .read(tagProvider.notifier)
-                    .updateTag(tag.copyWith(name: name));
-                if (context.mounted) Navigator.pop(context);
-              }
-            },
-            child: const Text('保存'),
-          ),
-        ],
       ),
     );
   }

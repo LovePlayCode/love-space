@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
+import '../../core/constants/tag_icons.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/media_item.dart';
 import '../../models/tag.dart';
@@ -396,9 +397,22 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: _getTagColor(tag.color).withValues(alpha: 0.5)),
                         ),
-                        child: Text(
-                          tag.name,
-                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (tag.icon != null) ...[
+                              Icon(
+                                TagIcons.getIcon(tag.icon),
+                                size: 12,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 4),
+                            ],
+                            Text(
+                              tag.name,
+                              style: const TextStyle(color: Colors.white, fontSize: 12),
+                            ),
+                          ],
                         ),
                       )).toList(),
                     ),
@@ -732,7 +746,11 @@ class _MediaTagEditSheetState extends ConsumerState<_MediaTagEditSheet> {
                         color: _getTagColor(tag.color).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Icon(Icons.label_rounded, color: _getTagColor(tag.color), size: 18),
+                      child: Icon(
+                        TagIcons.getIcon(tag.icon) ?? Icons.label_rounded,
+                        color: _getTagColor(tag.color),
+                        size: 18,
+                      ),
                     ),
                   );
                 },
@@ -755,40 +773,162 @@ class _MediaTagEditSheetState extends ConsumerState<_MediaTagEditSheet> {
 
   void _showCreateTagDialog(BuildContext context) {
     _newTagController.clear();
+    String? selectedIcon;
+    String? selectedColor;
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('新建标签'),
-        content: TextField(
-          controller: _newTagController,
-          decoration: const InputDecoration(
-            hintText: '输入标签名称',
-            border: OutlineInputBorder(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('新建标签'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: _newTagController,
+                  decoration: const InputDecoration(
+                    hintText: '输入标签名称',
+                    border: OutlineInputBorder(),
+                  ),
+                  autofocus: true,
+                ),
+                const SizedBox(height: 16),
+                const Text('选择图标', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
+                _buildIconSelector(
+                  selectedIcon: selectedIcon,
+                  selectedColor: selectedColor,
+                  onIconSelected: (icon) {
+                    setDialogState(() => selectedIcon = icon);
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Text('选择颜色', style: TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 8),
+                _buildColorSelector(
+                  selectedColor: selectedColor,
+                  onColorSelected: (color) {
+                    setDialogState(() => selectedColor = color);
+                  },
+                ),
+              ],
+            ),
           ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final name = _newTagController.text.trim();
-              if (name.isNotEmpty) {
-                final newTag = await ref.read(tagProvider.notifier).createTag(name);
-                if (newTag != null && context.mounted) {
-                  setState(() {
-                    _selectedTagIds.add(newTag.id!);
-                  });
-                  Navigator.pop(context);
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final name = _newTagController.text.trim();
+                if (name.isNotEmpty) {
+                  final newTag = await ref.read(tagProvider.notifier).createTag(
+                    name,
+                    color: selectedColor,
+                    icon: selectedIcon,
+                  );
+                  if (newTag != null && context.mounted) {
+                    setState(() {
+                      _selectedTagIds.add(newTag.id!);
+                    });
+                    Navigator.pop(context);
+                  }
                 }
-              }
-            },
-            child: const Text('创建'),
-          ),
-        ],
+              },
+              child: const Text('创建'),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildIconSelector({
+    String? selectedIcon,
+    String? selectedColor,
+    required Function(String?) onIconSelected,
+  }) {
+    final color = _getTagColor(selectedColor);
+    final iconCodes = TagIcons.allIconCodes;
+    return SizedBox(
+      height: 200,
+      child: SingleChildScrollView(
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: iconCodes.map((iconCode) {
+            final icon = TagIcons.getIcon(iconCode);
+            final isSelected = selectedIcon == iconCode;
+            return GestureDetector(
+              onTap: () => onIconSelected(iconCode),
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: isSelected ? color.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: isSelected ? Border.all(color: color, width: 2) : null,
+                ),
+                child: Icon(
+                  icon,
+                  size: 18,
+                  color: isSelected ? color : AppColors.textSecondary,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildColorSelector({
+    String? selectedColor,
+    required Function(String?) onColorSelected,
+  }) {
+    const colors = [
+      '#FF5722', // 深橙
+      '#E91E63', // 粉红
+      '#9C27B0', // 紫色
+      '#673AB7', // 深紫
+      '#3F51B5', // 靛蓝
+      '#2196F3', // 蓝色
+      '#00BCD4', // 青色
+      '#009688', // 蓝绿
+      '#4CAF50', // 绿色
+      '#8BC34A', // 浅绿
+      '#FF9800', // 橙色
+      '#795548', // 棕色
+    ];
+    
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: colors.map((colorHex) {
+        final color = Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
+        final isSelected = selectedColor == colorHex;
+        return GestureDetector(
+          onTap: () => onColorSelected(colorHex),
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              border: isSelected ? Border.all(color: Colors.white, width: 3) : null,
+              boxShadow: isSelected
+                  ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 8)]
+                  : null,
+            ),
+            child: isSelected
+                ? const Icon(Icons.check, color: Colors.white, size: 20)
+                : null,
+          ),
+        );
+      }).toList(),
     );
   }
 

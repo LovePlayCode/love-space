@@ -25,13 +25,13 @@ class TagNotifier extends StateNotifier<AsyncValue<List<Tag>>> {
   }
 
   /// 创建标签
-  Future<Tag?> createTag(String name, {String? color}) async {
+  Future<Tag?> createTag(String name, {String? color, String? icon}) async {
     try {
       // 检查是否已存在
       final existing = await _dbService.getTagByName(name);
       if (existing != null) return existing;
 
-      final tag = Tag(name: name, color: color);
+      final tag = Tag(name: name, color: color, icon: icon);
       final id = await _dbService.insertTag(tag);
       final newTag = tag.copyWith(id: id);
       await refresh();

@@ -36,6 +36,7 @@ final importProgressProvider = StateProvider<ImportProgress>((ref) => ImportProg
 class AlbumNotifier extends StateNotifier<AsyncValue<List<MediaItem>>> {
   final MediaService _mediaService = MediaService();
   final Ref _ref;
+  bool _isImporting = false; // 防止重复导入
 
   AlbumNotifier(this._ref) : super(const AsyncValue.loading()) {
     _loadMediaItems();
@@ -56,49 +57,68 @@ class AlbumNotifier extends StateNotifier<AsyncValue<List<MediaItem>>> {
   }
 
   /// 从相册选择并导入图片（带进度显示）
-  Future<List<MediaItem>> pickAndImportImages({int maxImages = 50}) async {
-    // 阶段1：选择图片（显示"正在加载图片"）
-    _ref.read(importProgressProvider.notifier).state = ImportProgress.selecting;
-
-    final xFiles = await _mediaService.pickImages(maxImages: maxImages);
-    
-    if (xFiles.isEmpty) {
-      _ref.read(importProgressProvider.notifier).state = ImportProgress.idle;
+  Future<List<MediaItem>> pickAndImportImages({int maxImages = 100}) async {
+    // 防止重复导入
+    if (_isImporting) {
       return [];
     }
-
-    final total = xFiles.length;
-    final List<MediaItem> importedItems = [];
-
-    // 阶段2：导入图片（显示进度）
-    _ref.read(importProgressProvider.notifier).state = ImportProgress(
-      total: total,
-      completed: 0,
-      stage: ImportStage.importing,
-    );
+    _isImporting = true;
 
     try {
-      for (int i = 0; i < xFiles.length; i++) {
-        final item = await _mediaService.importImage(xFiles[i]);
+      // 阶段1：选择图片（显示"正在加载图片"）
+      _ref.read(importProgressProvider.notifier).state = ImportProgress.selecting;
+
+      final xFiles = await _mediaService.pickImages(maxImages: maxImages);
+      
+      if (xFiles.isEmpty) {
+        _ref.read(importProgressProvider.notifier).state = ImportProgress.idle;
+        return [];
+      }
+
+      // 去重：根据文件路径去重
+      final uniquePaths = <String>{};
+      final uniqueFiles = <XFile>[];
+      for (final xFile in xFiles) {
+        if (uniquePaths.add(xFile.path)) {
+          uniqueFiles.add(xFile);
+        }
+      }
+
+      final total = uniqueFiles.length;
+      final List<MediaItem> importedItems = [];
+      int completed = 0;
+
+      // 阶段2：导入图片（显示进度）
+      _ref.read(importProgressProvider.notifier).state = ImportProgress(
+        total: total,
+        completed: 0,
+        stage: ImportStage.importing,
+      );
+
+      // 串行处理，避免并发问题
+      for (final xFile in uniqueFiles) {
+        final item = await _mediaService.importImage(xFile);
         if (item != null) {
           importedItems.add(item);
         }
+        completed++;
         // 更新进度
         _ref.read(importProgressProvider.notifier).state = ImportProgress(
           total: total,
-          completed: i + 1,
+          completed: completed,
           stage: ImportStage.importing,
         );
       }
+
+      if (importedItems.isNotEmpty) {
+        await refresh();
+      }
+      return importedItems;
     } finally {
       // 导入完成，重置状态
       _ref.read(importProgressProvider.notifier).state = ImportProgress.idle;
+      _isImporting = false;
     }
-
-    if (importedItems.isNotEmpty) {
-      await refresh();
-    }
-    return importedItems;
   }
 
   /// 导入单张图片
