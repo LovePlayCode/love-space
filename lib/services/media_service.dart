@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:video_thumbnail/video_thumbnail.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../core/constants/app_constants.dart';
 import '../models/media_item.dart';
 import 'database_service.dart';
@@ -30,13 +31,11 @@ class MediaService {
     return '$timestamp$extension';
   }
 
-  /// 从相册选择图片
+  /// 从相册选择图片（不压缩，快速返回）
   Future<List<XFile>> pickImages({int maxImages = 9}) async {
     try {
       final List<XFile> images = await _picker.pickMultiImage(
-        imageQuality: 85,
-        maxWidth: 1920,
-        maxHeight: 1920,
+        // 不设置压缩参数，快速返回原始路径
       );
       return images.take(maxImages).toList();
     } catch (e) {
@@ -157,13 +156,29 @@ class MediaService {
     }
   }
 
-  /// 导入图片并保存到数据库
+  /// 导入图片并保存到数据库（包含压缩）
   Future<MediaItem?> importImage(XFile xFile, {DateTime? takenDate}) async {
     try {
       final originalFile = File(xFile.path);
+      final mediaDir = await _getMediaDirectory(AppConstants.imageDirectory);
+      final fileName = _generateFileName('.jpg');
+      final targetPath = '${mediaDir.path}/$fileName';
 
-      // 保存到沙盒目录
-      final localPath = await saveFileToAppDir(originalFile);
+      // 压缩并保存图片
+      final compressedFile = await FlutterImageCompress.compressAndGetFile(
+        originalFile.path,
+        targetPath,
+        quality: 85,
+        minWidth: 1920,
+        minHeight: 1920,
+      );
+
+      final localPath = compressedFile?.path ?? targetPath;
+
+      // 如果压缩失败，直接复制原文件
+      if (compressedFile == null) {
+        await originalFile.copy(targetPath);
+      }
 
       // 获取图片尺寸
       final size = await getImageSize(localPath);

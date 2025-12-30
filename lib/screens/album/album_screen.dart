@@ -21,6 +21,41 @@ class AlbumScreen extends ConsumerStatefulWidget {
 class _AlbumScreenState extends ConsumerState<AlbumScreen> {
   bool _isSelectionMode = false;
   final Set<int> _selectedIds = {};
+  bool _isProgressDialogShowing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.listenManual(importProgressProvider, (previous, next) {
+        final shouldShow = next.stage != ImportStage.idle;
+        if (shouldShow && !_isProgressDialogShowing) {
+          _showImportProgressDialog();
+        } else if (!shouldShow && _isProgressDialogShowing) {
+          _dismissProgressDialog();
+        }
+      });
+    });
+  }
+
+  void _showImportProgressDialog() {
+    if (_isProgressDialogShowing || !mounted) return;
+    _isProgressDialogShowing = true;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => const _ImportProgressDialog(),
+    ).then((_) {
+      _isProgressDialogShowing = false;
+    });
+  }
+
+  void _dismissProgressDialog() {
+    if (_isProgressDialogShowing && mounted) {
+      Navigator.of(context, rootNavigator: true).pop();
+      _isProgressDialogShowing = false;
+    }
+  }
 
   void _toggleSelectionMode() {
     setState(() {
@@ -515,6 +550,74 @@ class _MediaCard extends StatelessWidget {
         child: const Center(
           child: Icon(Icons.broken_image_rounded, color: AppColors.textHint),
         ),
+      ),
+    );
+  }
+}
+
+/// 导入进度对话框
+class _ImportProgressDialog extends ConsumerWidget {
+  const _ImportProgressDialog();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final progress = ref.watch(importProgressProvider);
+
+    final isSelecting = progress.stage == ImportStage.selecting;
+    final isImporting = progress.stage == ImportStage.importing;
+
+    String title;
+    String subtitle;
+
+    if (isSelecting) {
+      title = '正在加载图片...';
+      subtitle = '请稍候，系统正在处理选中的图片';
+    } else if (isImporting) {
+      title = '正在导入 ${progress.completed}/${progress.total}';
+      subtitle = '${(progress.percentage * 100).toInt()}% 完成';
+    } else {
+      title = '准备中...';
+      subtitle = '请稍候';
+    }
+
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          SizedBox(
+            width: 60,
+            height: 60,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CircularProgressIndicator(
+                  value: isImporting && progress.total > 0 ? progress.percentage : null,
+                  strokeWidth: 4,
+                  backgroundColor: AppColors.divider,
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+                if (isImporting && progress.total > 0)
+                  Text(
+                    '${(progress.percentage * 100).toInt()}%',
+                    style: AppTextStyles.caption.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(title, style: AppTextStyles.body1),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

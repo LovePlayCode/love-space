@@ -4,11 +4,40 @@ import '../models/media_item.dart';
 import '../services/media_service.dart';
 import '../services/database_service.dart';
 
+/// 导入进度状态
+class ImportProgress {
+  final int total;
+  final int completed;
+  final ImportStage stage;
+
+  const ImportProgress({
+    required this.total,
+    required this.completed,
+    required this.stage,
+  });
+
+  double get percentage => total > 0 ? completed / total : 0;
+
+  static const idle = ImportProgress(total: 0, completed: 0, stage: ImportStage.idle);
+  static const selecting = ImportProgress(total: 0, completed: 0, stage: ImportStage.selecting);
+}
+
+/// 导入阶段
+enum ImportStage {
+  idle,       // 空闲
+  selecting,  // 正在选择图片（系统相册）
+  importing,  // 正在导入
+}
+
+/// 导入进度 Provider
+final importProgressProvider = StateProvider<ImportProgress>((ref) => ImportProgress.idle);
+
 /// 相册状态
 class AlbumNotifier extends StateNotifier<AsyncValue<List<MediaItem>>> {
   final MediaService _mediaService = MediaService();
+  final Ref _ref;
 
-  AlbumNotifier() : super(const AsyncValue.loading()) {
+  AlbumNotifier(this._ref) : super(const AsyncValue.loading()) {
     _loadMediaItems();
   }
 
@@ -26,16 +55,50 @@ class AlbumNotifier extends StateNotifier<AsyncValue<List<MediaItem>>> {
     await _loadMediaItems();
   }
 
-  /// 从相册选择并导入图片
-  Future<List<MediaItem>> pickAndImportImages({int maxImages = 9}) async {
-    final xFiles = await _mediaService.pickImages(maxImages: maxImages);
-    if (xFiles.isEmpty) return [];
+  /// 从相册选择并导入图片（带进度显示）
+  Future<List<MediaItem>> pickAndImportImages({int maxImages = 50}) async {
+    // 阶段1：选择图片（显示"正在加载图片"）
+    _ref.read(importProgressProvider.notifier).state = ImportProgress.selecting;
 
-    final items = await _mediaService.importImages(xFiles);
-    if (items.isNotEmpty) {
+    final xFiles = await _mediaService.pickImages(maxImages: maxImages);
+    
+    if (xFiles.isEmpty) {
+      _ref.read(importProgressProvider.notifier).state = ImportProgress.idle;
+      return [];
+    }
+
+    final total = xFiles.length;
+    final List<MediaItem> importedItems = [];
+
+    // 阶段2：导入图片（显示进度）
+    _ref.read(importProgressProvider.notifier).state = ImportProgress(
+      total: total,
+      completed: 0,
+      stage: ImportStage.importing,
+    );
+
+    try {
+      for (int i = 0; i < xFiles.length; i++) {
+        final item = await _mediaService.importImage(xFiles[i]);
+        if (item != null) {
+          importedItems.add(item);
+        }
+        // 更新进度
+        _ref.read(importProgressProvider.notifier).state = ImportProgress(
+          total: total,
+          completed: i + 1,
+          stage: ImportStage.importing,
+        );
+      }
+    } finally {
+      // 导入完成，重置状态
+      _ref.read(importProgressProvider.notifier).state = ImportProgress.idle;
+    }
+
+    if (importedItems.isNotEmpty) {
       await refresh();
     }
-    return items;
+    return importedItems;
   }
 
   /// 导入单张图片
@@ -109,7 +172,7 @@ class AlbumNotifier extends StateNotifier<AsyncValue<List<MediaItem>>> {
 
 /// 相册 Provider
 final albumProvider = StateNotifierProvider<AlbumNotifier, AsyncValue<List<MediaItem>>>((ref) {
-  return AlbumNotifier();
+  return AlbumNotifier(ref);
 });
 
 /// 媒体总数 Provider
