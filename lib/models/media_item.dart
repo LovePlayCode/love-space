@@ -3,6 +3,7 @@ class MediaItem {
   final int? id;
   final int type; // 0: Image, 1: Video
   final String localPath;
+  final String? thumbnailPath; // 视频封面路径
   final int takenDate; // 时间戳
   final String? caption;
   final int? width;
@@ -13,6 +14,7 @@ class MediaItem {
     this.id,
     required this.type,
     required this.localPath,
+    this.thumbnailPath,
     required this.takenDate,
     this.caption,
     this.width,
@@ -25,6 +27,9 @@ class MediaItem {
 
   DateTime get takenDateTime => DateTime.fromMillisecondsSinceEpoch(takenDate);
   DateTime get createdDateTime => DateTime.fromMillisecondsSinceEpoch(createdAt);
+
+  /// 获取显示用的图片路径（视频用封面，图片用原图）
+  String get displayPath => thumbnailPath ?? localPath;
 
   /// 计算瀑布流展示的宽高比
   double get aspectRatio {
@@ -39,6 +44,7 @@ class MediaItem {
       'id': id,
       'type': type,
       'local_path': localPath,
+      'thumbnail_path': thumbnailPath,
       'taken_date': takenDate,
       'caption': caption,
       'width': width,
@@ -52,6 +58,7 @@ class MediaItem {
       id: map['id'] as int?,
       type: map['type'] as int,
       localPath: map['local_path'] as String,
+      thumbnailPath: map['thumbnail_path'] as String?,
       takenDate: map['taken_date'] as int,
       caption: map['caption'] as String?,
       width: map['width'] as int?,
@@ -64,6 +71,7 @@ class MediaItem {
     int? id,
     int? type,
     String? localPath,
+    String? thumbnailPath,
     int? takenDate,
     String? caption,
     int? width,
@@ -74,6 +82,7 @@ class MediaItem {
       id: id ?? this.id,
       type: type ?? this.type,
       localPath: localPath ?? this.localPath,
+      thumbnailPath: thumbnailPath ?? this.thumbnailPath,
       takenDate: takenDate ?? this.takenDate,
       caption: caption ?? this.caption,
       width: width ?? this.width,

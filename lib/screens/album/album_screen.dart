@@ -496,7 +496,8 @@ class _MediaCard extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    final file = File(item.localPath);
+    // 视频使用封面，图片使用原图
+    final file = File(item.displayPath);
     if (!file.existsSync()) {
       return Container(
         color: AppColors.backgroundPink,

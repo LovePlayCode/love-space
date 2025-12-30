@@ -8,7 +8,7 @@ class AppConstants {
 
   // 数据库
   static const String databaseName = 'love_space.db';
-  static const int databaseVersion = 1;
+  static const int databaseVersion = 2;
 
   // SharedPreferences Keys
   static const String keyIsFirstLaunch = 'is_first_launch';
@@ -22,6 +22,7 @@ class AppConstants {
   // 文件目录
   static const String imageDirectory = 'images';
   static const String videoDirectory = 'videos';
+  static const String thumbnailDirectory = 'thumbnails';
   static const String backupDirectory = 'backups';
 
   // 媒体类型

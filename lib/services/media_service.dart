@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:video_thumbnail/video_thumbnail.dart';
 import '../core/constants/app_constants.dart';
 import '../models/media_item.dart';
 import 'database_service.dart';
@@ -130,6 +131,32 @@ class MediaService {
     }
   }
 
+  /// 生成视频封面（第一帧）
+  Future<String?> generateVideoThumbnail(String videoPath) async {
+    try {
+      final thumbnailDir = await _getMediaDirectory(AppConstants.thumbnailDirectory);
+      final fileName = _generateFileName('.jpg');
+      final thumbnailPath = await VideoThumbnail.thumbnailFile(
+        video: videoPath,
+        thumbnailPath: thumbnailDir.path,
+        imageFormat: ImageFormat.JPEG,
+        maxWidth: 512,
+        quality: 85,
+      );
+      if (thumbnailPath != null) {
+        // 重命名为我们的文件名格式
+        final file = File(thumbnailPath);
+        final newPath = '${thumbnailDir.path}/$fileName';
+        await file.rename(newPath);
+        return newPath;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error generating video thumbnail: $e');
+      return null;
+    }
+  }
+
   /// 导入图片并保存到数据库
   Future<MediaItem?> importImage(XFile xFile, {DateTime? takenDate}) async {
     try {
@@ -186,6 +213,15 @@ class MediaService {
       // 保存到沙盒目录
       final localPath = await saveFileToAppDir(originalFile, isVideo: true);
 
+      // 生成视频封面
+      final thumbnailPath = await generateVideoThumbnail(localPath);
+
+      // 获取封面尺寸
+      Map<String, int>? size;
+      if (thumbnailPath != null) {
+        size = await getImageSize(thumbnailPath);
+      }
+
       // 使用传入的日期或当前时间
       final date = takenDate ?? DateTime.now();
 
@@ -193,7 +229,10 @@ class MediaService {
       final mediaItem = MediaItem(
         type: AppConstants.mediaTypeVideo,
         localPath: localPath,
+        thumbnailPath: thumbnailPath,
         takenDate: date.millisecondsSinceEpoch,
+        width: size?['width'],
+        height: size?['height'],
       );
 
       // 保存到数据库
@@ -223,8 +262,13 @@ class MediaService {
   /// 删除媒体项（包括文件和数据库记录）
   Future<bool> deleteMediaItem(MediaItem item) async {
     try {
-      // 删除文件
+      // 删除视频文件
       await deleteMediaFile(item.localPath);
+
+      // 删除封面文件
+      if (item.thumbnailPath != null) {
+        await deleteMediaFile(item.thumbnailPath!);
+      }
 
       // 删除数据库记录
       if (item.id != null) {

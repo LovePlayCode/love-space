@@ -39,6 +39,7 @@ class DatabaseService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         type INTEGER NOT NULL,
         local_path TEXT NOT NULL,
+        thumbnail_path TEXT,
         taken_date INTEGER NOT NULL,
         caption TEXT,
         width INTEGER,
@@ -78,6 +79,10 @@ class DatabaseService {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     // 数据库版本升级逻辑
+    if (oldVersion < 2) {
+      // 添加 thumbnail_path 字段
+      await db.execute('ALTER TABLE media_items ADD COLUMN thumbnail_path TEXT');
+    }
   }
 
   // ==================== MediaItem 操作 ====================

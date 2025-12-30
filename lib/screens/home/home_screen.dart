@@ -381,7 +381,7 @@ class HomeScreen extends ConsumerWidget {
             fit: StackFit.expand,
             children: [
               Image.file(
-                File(item.localPath),
+                File(item.displayPath),
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   color: AppColors.divider,
