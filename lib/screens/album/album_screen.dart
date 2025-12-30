@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/media_item.dart';
+import '../../models/tag.dart';
 import '../../providers/album_provider.dart';
+import '../../providers/tag_provider.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/common/toast_utils.dart';
 import 'package:intl/intl.dart';
@@ -26,7 +28,9 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
   @override
   void initState() {
     super.initState();
+    // 在框架渲染完成后执行监听逻辑，监听importProgressProvider的状态变化。
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 监听导入进度状态的变化
       ref.listenManual(importProgressProvider, (previous, next) {
         final shouldShow = next.stage != ImportStage.idle;
         if (shouldShow && !_isProgressDialogShowing) {
@@ -109,7 +113,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
 
     final albumNotifier = ref.read(albumProvider.notifier);
     final currentItems = ref.read(albumProvider).valueOrNull ?? [];
-    
+
     int successCount = 0;
     for (final id in _selectedIds) {
       final item = currentItems.firstWhere(
@@ -130,7 +134,13 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final albumAsync = ref.watch(albumProvider);
+    final selectedTags = ref.watch(selectedFilterTagsProvider);
+    final tagsAsync = ref.watch(tagProvider);
+
+    // 根据是否有筛选标签选择数据源
+    final mediaAsync = selectedTags.isEmpty
+        ? ref.watch(albumProvider)
+        : ref.watch(mediaByTagsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -147,21 +157,32 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
             : null,
         actions: _isSelectionMode
             ? [
-                albumAsync.whenOrNull(
-                  data: (items) => TextButton(
-                    onPressed: () => _selectAll(items),
-                    child: const Text('全选'),
-                  ),
-                ) ?? const SizedBox(),
+                mediaAsync.whenOrNull(
+                      data: (items) => TextButton(
+                        onPressed: () => _selectAll(items),
+                        child: const Text('全选'),
+                      ),
+                    ) ??
+                    const SizedBox(),
                 IconButton(
                   onPressed: _selectedIds.isEmpty ? null : _deleteSelected,
                   icon: Icon(
                     Icons.delete_rounded,
-                    color: _selectedIds.isEmpty ? AppColors.textHint : AppColors.error,
+                    color: _selectedIds.isEmpty
+                        ? AppColors.textHint
+                        : AppColors.error,
                   ),
                 ),
               ]
             : [
+                IconButton(
+                  onPressed: () => _showTagFilterSheet(context, ref),
+                  icon: Badge(
+                    isLabelVisible: selectedTags.isNotEmpty,
+                    label: Text('${selectedTags.length}'),
+                    child: const Icon(Icons.filter_list_rounded),
+                  ),
+                ),
                 IconButton(
                   onPressed: () => _toggleSelectionMode(),
                   icon: const Icon(Icons.checklist_rounded),
@@ -172,18 +193,34 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
                 ),
               ],
       ),
-      body: albumAsync.when(
-        loading: () => const LoadingWidget(),
-        error: (error, stack) => AppErrorWidget(
-          message: '加载失败',
-          onRetry: () => ref.refresh(albumProvider),
-        ),
-        data: (mediaItems) {
-          if (mediaItems.isEmpty) {
-            return _buildEmptyState(context, ref);
-          }
-          return _buildWaterfallGrid(context, ref, mediaItems);
-        },
+      body: Column(
+        children: [
+          // 标签筛选栏
+          if (selectedTags.isNotEmpty)
+            _buildSelectedTagsBar(tagsAsync, selectedTags),
+          // 媒体列表
+          Expanded(
+            child: mediaAsync.when(
+              loading: () => const LoadingWidget(),
+              error: (error, stack) => AppErrorWidget(
+                message: '加载失败',
+                onRetry: () {
+                  ref.invalidate(albumProvider);
+                  ref.invalidate(mediaByTagsProvider);
+                },
+              ),
+              data: (mediaItems) {
+                if (mediaItems.isEmpty) {
+                  if (selectedTags.isNotEmpty) {
+                    return _buildNoFilterResultState(context, ref);
+                  }
+                  return _buildEmptyState(context, ref);
+                }
+                return _buildWaterfallGrid(context, ref, mediaItems);
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: _isSelectionMode
           ? null
@@ -192,6 +229,118 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
               backgroundColor: AppColors.primary,
               child: const Icon(Icons.add_rounded, color: AppColors.textWhite),
             ),
+    );
+  }
+
+  Widget _buildSelectedTagsBar(
+    AsyncValue<List<Tag>> tagsAsync,
+    Set<int> selectedTags,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        border: Border(
+          bottom: BorderSide(color: AppColors.divider, width: 0.5),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.filter_list_rounded,
+            size: 16,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: tagsAsync.whenOrNull(
+                data: (tags) => Row(
+                  children: tags
+                      .where((t) => selectedTags.contains(t.id))
+                      .map(
+                        (tag) => Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Chip(
+                            label: Text(
+                              tag.name,
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            deleteIcon: const Icon(Icons.close, size: 16),
+                            onDeleted: () {
+                              final newSet = Set<int>.from(selectedTags)
+                                ..remove(tag.id);
+                              ref
+                                      .read(selectedFilterTagsProvider.notifier)
+                                      .state =
+                                  newSet;
+                            },
+                            visualDensity: VisualDensity.compact,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(selectedFilterTagsProvider.notifier).state = {};
+            },
+            child: const Text('清除', style: TextStyle(fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoFilterResultState(BuildContext context, WidgetRef ref) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.filter_list_off_rounded,
+            size: 64,
+            color: AppColors.textHint,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '没有符合筛选条件的照片',
+            style: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () {
+              ref.read(selectedFilterTagsProvider.notifier).state = {};
+            },
+            child: const Text('清除筛选'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTagFilterSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.cardBackground,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        minChildSize: 0.3,
+        maxChildSize: 0.8,
+        expand: false,
+        builder: (context, scrollController) =>
+            _TagFilterSheet(scrollController: scrollController),
+      ),
     );
   }
 
@@ -208,7 +357,11 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
     );
   }
 
-  Widget _buildWaterfallGrid(BuildContext context, WidgetRef ref, List<MediaItem> items) {
+  Widget _buildWaterfallGrid(
+    BuildContext context,
+    WidgetRef ref,
+    List<MediaItem> items,
+  ) {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: MasonryGridView.count(
@@ -267,10 +420,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  '添加照片/视频',
-                  style: AppTextStyles.subtitle1,
-                ),
+                const Text('添加照片/视频', style: AppTextStyles.subtitle1),
                 const SizedBox(height: 12),
                 ListTile(
                   leading: Container(
@@ -280,7 +430,11 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
                       color: AppColors.primaryLighter,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.photo_library_rounded, color: AppColors.primary, size: 22),
+                    child: const Icon(
+                      Icons.photo_library_rounded,
+                      color: AppColors.primary,
+                      size: 22,
+                    ),
                   ),
                   title: const Text('从相册选择照片'),
                   subtitle: const Text('选择多张照片'),
@@ -297,7 +451,11 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
                       color: AppColors.primaryLighter,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.videocam_rounded, color: AppColors.primary, size: 22),
+                    child: const Icon(
+                      Icons.videocam_rounded,
+                      color: AppColors.primary,
+                      size: 22,
+                    ),
                   ),
                   title: const Text('从相册选择视频'),
                   subtitle: const Text('选择一个视频'),
@@ -314,7 +472,11 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
                       color: AppColors.primaryLighter,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.camera_alt_rounded, color: AppColors.primary, size: 22),
+                    child: const Icon(
+                      Icons.camera_alt_rounded,
+                      color: AppColors.primary,
+                      size: 22,
+                    ),
                   ),
                   title: const Text('拍照'),
                   subtitle: const Text('立即拍摄一张'),
@@ -331,7 +493,11 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
                       color: AppColors.primaryLighter,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.video_camera_back_rounded, color: AppColors.primary, size: 22),
+                    child: const Icon(
+                      Icons.video_camera_back_rounded,
+                      color: AppColors.primary,
+                      size: 22,
+                    ),
                   ),
                   title: const Text('录制视频'),
                   subtitle: const Text('立即录制一段'),
@@ -459,7 +625,10 @@ class _MediaCard extends StatelessWidget {
                   top: 8,
                   right: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black54,
                       borderRadius: BorderRadius.circular(12),
@@ -467,7 +636,11 @@ class _MediaCard extends StatelessWidget {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.videocam_rounded, color: Colors.white, size: 14),
+                        Icon(
+                          Icons.videocam_rounded,
+                          color: Colors.white,
+                          size: 14,
+                        ),
                         SizedBox(width: 4),
                         Text(
                           '视频',
@@ -593,10 +766,14 @@ class _ImportProgressDialog extends ConsumerWidget {
               alignment: Alignment.center,
               children: [
                 CircularProgressIndicator(
-                  value: isImporting && progress.total > 0 ? progress.percentage : null,
+                  value: isImporting && progress.total > 0
+                      ? progress.percentage
+                      : null,
                   strokeWidth: 4,
                   backgroundColor: AppColors.divider,
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    AppColors.primary,
+                  ),
                 ),
                 if (isImporting && progress.total > 0)
                   Text(
@@ -616,6 +793,286 @@ class _ImportProgressDialog extends ConsumerWidget {
             subtitle,
             style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
             textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 标签筛选 Sheet
+class _TagFilterSheet extends ConsumerStatefulWidget {
+  final ScrollController scrollController;
+
+  const _TagFilterSheet({required this.scrollController});
+
+  @override
+  ConsumerState<_TagFilterSheet> createState() => _TagFilterSheetState();
+}
+
+class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
+  final _newTagController = TextEditingController();
+
+  @override
+  void dispose() {
+    _newTagController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tagsAsync = ref.watch(tagProvider);
+    final selectedTags = ref.watch(selectedFilterTagsProvider);
+
+    return Column(
+      children: [
+        // 标题栏
+        Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('标签筛选', style: AppTextStyles.subtitle1),
+                  TextButton.icon(
+                    onPressed: () => _showCreateTagDialog(context),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('新建标签'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        // 标签列表
+        Expanded(
+          child: tagsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, st) => Center(child: Text('加载失败: $e')),
+            data: (tags) {
+              if (tags.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.label_off_rounded,
+                        size: 48,
+                        color: AppColors.textHint,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '还没有标签',
+                        style: AppTextStyles.body2.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () => _showCreateTagDialog(context),
+                        child: const Text('创建第一个标签'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return ListView.builder(
+                controller: widget.scrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: tags.length,
+                itemBuilder: (context, index) {
+                  final tag = tags[index];
+                  final isSelected = selectedTags.contains(tag.id);
+                  return ListTile(
+                    leading: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: _getTagColor(tag.color).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.label_rounded,
+                        color: _getTagColor(tag.color),
+                        size: 18,
+                      ),
+                    ),
+                    title: Text(tag.name),
+                    trailing: Checkbox(
+                      value: isSelected,
+                      onChanged: (value) {
+                        final newSet = Set<int>.from(selectedTags);
+                        if (value == true) {
+                          newSet.add(tag.id!);
+                        } else {
+                          newSet.remove(tag.id);
+                        }
+                        ref.read(selectedFilterTagsProvider.notifier).state =
+                            newSet;
+                      },
+                    ),
+                    onTap: () {
+                      final newSet = Set<int>.from(selectedTags);
+                      if (isSelected) {
+                        newSet.remove(tag.id);
+                      } else {
+                        newSet.add(tag.id!);
+                      }
+                      ref.read(selectedFilterTagsProvider.notifier).state =
+                          newSet;
+                    },
+                    onLongPress: () => _showTagOptionsDialog(context, tag),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getTagColor(String? colorHex) {
+    if (colorHex == null) return AppColors.primary;
+    try {
+      return Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
+    } catch (e) {
+      return AppColors.primary;
+    }
+  }
+
+  void _showCreateTagDialog(BuildContext context) {
+    _newTagController.clear();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('新建标签'),
+        content: TextField(
+          controller: _newTagController,
+          decoration: const InputDecoration(
+            hintText: '输入标签名称',
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final name = _newTagController.text.trim();
+              if (name.isNotEmpty) {
+                await ref.read(tagProvider.notifier).createTag(name);
+                if (context.mounted) Navigator.pop(context);
+              }
+            },
+            child: const Text('创建'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTagOptionsDialog(BuildContext context, Tag tag) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tag.name),
+        content: const Text('选择操作'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showEditTagDialog(context, tag);
+            },
+            child: const Text('编辑'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('确认删除'),
+                  content: Text('确定要删除标签"${tag.name}"吗？'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('取消'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.error,
+                      ),
+                      child: const Text('删除'),
+                    ),
+                  ],
+                ),
+              );
+              if (confirmed == true) {
+                await ref.read(tagProvider.notifier).deleteTag(tag.id!);
+                // 从筛选中移除
+                final selectedTags = ref.read(selectedFilterTagsProvider);
+                if (selectedTags.contains(tag.id)) {
+                  ref
+                      .read(selectedFilterTagsProvider.notifier)
+                      .state = Set<int>.from(selectedTags)
+                    ..remove(tag.id);
+                }
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditTagDialog(BuildContext context, Tag tag) {
+    _newTagController.text = tag.name;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('编辑标签'),
+        content: TextField(
+          controller: _newTagController,
+          decoration: const InputDecoration(
+            hintText: '输入标签名称',
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final name = _newTagController.text.trim();
+              if (name.isNotEmpty) {
+                await ref
+                    .read(tagProvider.notifier)
+                    .updateTag(tag.copyWith(name: name));
+                if (context.mounted) Navigator.pop(context);
+              }
+            },
+            child: const Text('保存'),
           ),
         ],
       ),

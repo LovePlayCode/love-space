@@ -186,3 +186,33 @@ final mediaDatesProvider = FutureProvider<Set<String>>((ref) async {
   final dbService = DatabaseService();
   return await dbService.getMediaDates();
 });
+
+/// 根据标签筛选的媒体 Provider
+final filteredMediaProvider = Provider<AsyncValue<List<MediaItem>>>((ref) {
+  final albumAsync = ref.watch(albumProvider);
+  final selectedTags = ref.watch(selectedFilterTagsProvider);
+
+  if (selectedTags.isEmpty) {
+    return albumAsync;
+  }
+
+  return albumAsync.whenData((items) {
+    // 这里需要异步获取，但 Provider 是同步的，所以使用另一种方式
+    return items;
+  });
+});
+
+/// 当前选中的筛选标签 Provider
+final selectedFilterTagsProvider = StateProvider<Set<int>>((ref) => {});
+
+/// 根据标签筛选媒体的 FutureProvider
+final mediaByTagsProvider = FutureProvider<List<MediaItem>>((ref) async {
+  final selectedTags = ref.watch(selectedFilterTagsProvider);
+  final dbService = DatabaseService();
+
+  if (selectedTags.isEmpty) {
+    return await dbService.getAllMediaItems();
+  }
+
+  return await dbService.getMediaItemsByTags(selectedTags.toList());
+});

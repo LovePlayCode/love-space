@@ -4,6 +4,7 @@ import '../core/constants/app_constants.dart';
 import '../models/media_item.dart';
 import '../models/daily_log.dart';
 import '../models/anniversary.dart';
+import '../models/tag.dart';
 
 /// 数据库服务 - 管理 SQLite 数据库操作
 class DatabaseService {
@@ -75,6 +76,31 @@ class DatabaseService {
     // 创建索引
     await db.execute('CREATE INDEX idx_media_taken_date ON media_items(taken_date)');
     await db.execute('CREATE INDEX idx_anniversary_event_date ON anniversaries(event_date)');
+
+    // 创建标签表
+    await db.execute('''
+      CREATE TABLE tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        color TEXT,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+
+    // 创建媒体-标签关联表
+    await db.execute('''
+      CREATE TABLE media_tags (
+        media_id INTEGER NOT NULL,
+        tag_id INTEGER NOT NULL,
+        PRIMARY KEY (media_id, tag_id),
+        FOREIGN KEY (media_id) REFERENCES media_items(id) ON DELETE CASCADE,
+        FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+      )
+    ''');
+
+    // 创建标签索引
+    await db.execute('CREATE INDEX idx_media_tags_media_id ON media_tags(media_id)');
+    await db.execute('CREATE INDEX idx_media_tags_tag_id ON media_tags(tag_id)');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -82,6 +108,29 @@ class DatabaseService {
     if (oldVersion < 2) {
       // 添加 thumbnail_path 字段
       await db.execute('ALTER TABLE media_items ADD COLUMN thumbnail_path TEXT');
+    }
+    if (oldVersion < 3) {
+      // 添加标签表
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS tags (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL UNIQUE,
+          color TEXT,
+          created_at INTEGER NOT NULL
+        )
+      ''');
+      // 添加媒体-标签关联表
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS media_tags (
+          media_id INTEGER NOT NULL,
+          tag_id INTEGER NOT NULL,
+          PRIMARY KEY (media_id, tag_id),
+          FOREIGN KEY (media_id) REFERENCES media_items(id) ON DELETE CASCADE,
+          FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+        )
+      ''');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_media_tags_media_id ON media_tags(media_id)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_media_tags_tag_id ON media_tags(tag_id)');
     }
   }
 
@@ -286,6 +335,164 @@ class DatabaseService {
   }
 
   // ==================== 通用操作 ====================
+
+  // ==================== Tag 操作 ====================
+
+  /// 插入标签
+  Future<int> insertTag(Tag tag) async {
+    final db = await database;
+    return await db.insert('tags', tag.toMap());
+  }
+
+  /// 获取所有标签
+  Future<List<Tag>> getAllTags() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'tags',
+      orderBy: 'name ASC',
+    );
+    return maps.map((map) => Tag.fromMap(map)).toList();
+  }
+
+  /// 根据 ID 获取标签
+  Future<Tag?> getTagById(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'tags',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (maps.isEmpty) return null;
+    return Tag.fromMap(maps.first);
+  }
+
+  /// 根据名称获取标签
+  Future<Tag?> getTagByName(String name) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'tags',
+      where: 'name = ?',
+      whereArgs: [name],
+    );
+    if (maps.isEmpty) return null;
+    return Tag.fromMap(maps.first);
+  }
+
+  /// 更新标签
+  Future<int> updateTag(Tag tag) async {
+    final db = await database;
+    return await db.update(
+      'tags',
+      tag.toMap(),
+      where: 'id = ?',
+      whereArgs: [tag.id],
+    );
+  }
+
+  /// 删除标签
+  Future<int> deleteTag(int id) async {
+    final db = await database;
+    // 先删除关联
+    await db.delete('media_tags', where: 'tag_id = ?', whereArgs: [id]);
+    return await db.delete('tags', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ==================== MediaTag 操作 ====================
+
+  /// 为媒体添加标签
+  Future<void> addTagToMedia(int mediaId, int tagId) async {
+    final db = await database;
+    await db.insert(
+      'media_tags',
+      {'media_id': mediaId, 'tag_id': tagId},
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  /// 从媒体移除标签
+  Future<void> removeTagFromMedia(int mediaId, int tagId) async {
+    final db = await database;
+    await db.delete(
+      'media_tags',
+      where: 'media_id = ? AND tag_id = ?',
+      whereArgs: [mediaId, tagId],
+    );
+  }
+
+  /// 获取媒体的所有标签
+  Future<List<Tag>> getTagsForMedia(int mediaId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT t.* FROM tags t
+      INNER JOIN media_tags mt ON t.id = mt.tag_id
+      WHERE mt.media_id = ?
+      ORDER BY t.name ASC
+    ''', [mediaId]);
+    return maps.map((map) => Tag.fromMap(map)).toList();
+  }
+
+  /// 获取拥有指定标签的所有媒体 ID
+  Future<List<int>> getMediaIdsForTag(int tagId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'media_tags',
+      columns: ['media_id'],
+      where: 'tag_id = ?',
+      whereArgs: [tagId],
+    );
+    return maps.map((map) => map['media_id'] as int).toList();
+  }
+
+  /// 获取拥有指定标签的所有媒体
+  Future<List<MediaItem>> getMediaItemsByTag(int tagId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT m.* FROM media_items m
+      INNER JOIN media_tags mt ON m.id = mt.media_id
+      WHERE mt.tag_id = ?
+      ORDER BY m.taken_date DESC
+    ''', [tagId]);
+    return maps.map((map) => MediaItem.fromMap(map)).toList();
+  }
+
+  /// 获取拥有任意指定标签的所有媒体
+  Future<List<MediaItem>> getMediaItemsByTags(List<int> tagIds) async {
+    if (tagIds.isEmpty) return getAllMediaItems();
+    final db = await database;
+    final placeholders = tagIds.map((_) => '?').join(',');
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT DISTINCT m.* FROM media_items m
+      INNER JOIN media_tags mt ON m.id = mt.media_id
+      WHERE mt.tag_id IN ($placeholders)
+      ORDER BY m.taken_date DESC
+    ''', tagIds);
+    return maps.map((map) => MediaItem.fromMap(map)).toList();
+  }
+
+  /// 设置媒体的标签（替换所有）
+  Future<void> setTagsForMedia(int mediaId, List<int> tagIds) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      // 删除旧的关联
+      await txn.delete('media_tags', where: 'media_id = ?', whereArgs: [mediaId]);
+      // 添加新的关联
+      for (final tagId in tagIds) {
+        await txn.insert('media_tags', {'media_id': mediaId, 'tag_id': tagId});
+      }
+    });
+  }
+
+  /// 获取标签使用次数
+  Future<int> getTagUsageCount(int tagId) async {
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM media_tags WHERE tag_id = ?',
+      [tagId],
+    );
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  // ==================== 通用操作（原有）====================
 
   /// 关闭数据库
   Future<void> close() async {

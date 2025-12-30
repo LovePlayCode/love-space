@@ -7,7 +7,9 @@ import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/media_item.dart';
+import '../../models/tag.dart';
 import '../../providers/album_provider.dart';
+import '../../providers/tag_provider.dart';
 import '../../services/database_service.dart';
 
 class PhotoDetailScreen extends ConsumerStatefulWidget {
@@ -24,6 +26,7 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
   bool _isLoading = true;
   final _captionController = TextEditingController();
   bool _isEditing = false;
+  List<Tag> _mediaTags = [];
   
   // 视频播放器
   VideoPlayerController? _videoController;
@@ -55,9 +58,12 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
 
     final dbService = DatabaseService();
     final item = await dbService.getMediaItemById(id);
+    final tags = await dbService.getTagsForMedia(id);
+    
     setState(() {
       _mediaItem = item;
       _captionController.text = item?.caption ?? '';
+      _mediaTags = tags;
       _isLoading = false;
     });
     
@@ -347,12 +353,93 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
             ],
           ),
           const SizedBox(height: 12),
+          // 标签
+          _buildTagsSection(),
+          const SizedBox(height: 12),
           // 备注
           if (_isEditing)
             _buildCaptionEditor()
           else
             _buildCaptionDisplay(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTagsSection() {
+    return GestureDetector(
+      onTap: () => _showTagEditSheet(),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white10,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.label_rounded, color: Colors.white54, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _mediaTags.isEmpty
+                  ? const Text(
+                      '点击添加标签...',
+                      style: TextStyle(color: Colors.white54, fontSize: 14),
+                    )
+                  : Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: _mediaTags.map((tag) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _getTagColor(tag.color).withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: _getTagColor(tag.color).withValues(alpha: 0.5)),
+                        ),
+                        child: Text(
+                          tag.name,
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                        ),
+                      )).toList(),
+                    ),
+            ),
+            const Icon(Icons.edit_rounded, color: Colors.white54, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getTagColor(String? colorHex) {
+    if (colorHex == null) return AppColors.primary;
+    try {
+      return Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
+    } catch (e) {
+      return AppColors.primary;
+    }
+  }
+
+  void _showTagEditSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.cardBackground,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        minChildSize: 0.3,
+        maxChildSize: 0.8,
+        expand: false,
+        builder: (context, scrollController) => _MediaTagEditSheet(
+          mediaId: _mediaItem!.id!,
+          currentTags: _mediaTags,
+          scrollController: scrollController,
+          onTagsChanged: (tags) {
+            setState(() => _mediaTags = tags);
+          },
+        ),
       ),
     );
   }
@@ -516,5 +603,208 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
         ],
       ),
     );
+  }
+}
+
+/// 媒体标签编辑 Sheet
+class _MediaTagEditSheet extends ConsumerStatefulWidget {
+  final int mediaId;
+  final List<Tag> currentTags;
+  final ScrollController scrollController;
+  final Function(List<Tag>) onTagsChanged;
+
+  const _MediaTagEditSheet({
+    required this.mediaId,
+    required this.currentTags,
+    required this.scrollController,
+    required this.onTagsChanged,
+  });
+
+  @override
+  ConsumerState<_MediaTagEditSheet> createState() => _MediaTagEditSheetState();
+}
+
+class _MediaTagEditSheetState extends ConsumerState<_MediaTagEditSheet> {
+  late Set<int> _selectedTagIds;
+  final _newTagController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTagIds = widget.currentTags.map((t) => t.id!).toSet();
+  }
+
+  @override
+  void dispose() {
+    _newTagController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tagsAsync = ref.watch(tagProvider);
+
+    return Column(
+      children: [
+        // 标题栏
+        Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('编辑标签', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: () => _showCreateTagDialog(context),
+                        icon: const Icon(Icons.add, size: 18),
+                        label: const Text('新建'),
+                      ),
+                      TextButton(
+                        onPressed: () => _saveTags(context),
+                        child: const Text('完成'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        // 标签列表
+        Expanded(
+          child: tagsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, st) => Center(child: Text('加载失败: $e')),
+            data: (tags) {
+              if (tags.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.label_off_rounded, size: 48, color: AppColors.textHint),
+                      const SizedBox(height: 12),
+                      Text('还没有标签', style: TextStyle(color: AppColors.textSecondary)),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () => _showCreateTagDialog(context),
+                        child: const Text('创建第一个标签'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return ListView.builder(
+                controller: widget.scrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: tags.length,
+                itemBuilder: (context, index) {
+                  final tag = tags[index];
+                  final isSelected = _selectedTagIds.contains(tag.id);
+                  return CheckboxListTile(
+                    value: isSelected,
+                    onChanged: (value) {
+                      setState(() {
+                        if (value == true) {
+                          _selectedTagIds.add(tag.id!);
+                        } else {
+                          _selectedTagIds.remove(tag.id);
+                        }
+                      });
+                    },
+                    title: Text(tag.name),
+                    secondary: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: _getTagColor(tag.color).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.label_rounded, color: _getTagColor(tag.color), size: 18),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getTagColor(String? colorHex) {
+    if (colorHex == null) return AppColors.primary;
+    try {
+      return Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
+    } catch (e) {
+      return AppColors.primary;
+    }
+  }
+
+  void _showCreateTagDialog(BuildContext context) {
+    _newTagController.clear();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('新建标签'),
+        content: TextField(
+          controller: _newTagController,
+          decoration: const InputDecoration(
+            hintText: '输入标签名称',
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final name = _newTagController.text.trim();
+              if (name.isNotEmpty) {
+                final newTag = await ref.read(tagProvider.notifier).createTag(name);
+                if (newTag != null && context.mounted) {
+                  setState(() {
+                    _selectedTagIds.add(newTag.id!);
+                  });
+                  Navigator.pop(context);
+                }
+              }
+            },
+            child: const Text('创建'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveTags(BuildContext context) async {
+    final dbService = DatabaseService();
+    await dbService.setTagsForMedia(widget.mediaId, _selectedTagIds.toList());
+    
+    // 获取更新后的标签列表
+    final updatedTags = await dbService.getTagsForMedia(widget.mediaId);
+    widget.onTagsChanged(updatedTags);
+    
+    // 刷新筛选结果
+    ref.invalidate(mediaByTagsProvider);
+    
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
   }
 }
