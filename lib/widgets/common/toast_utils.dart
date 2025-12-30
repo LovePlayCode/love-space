@@ -1,49 +1,49 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 
-/// Toast 工具类 - 顶部显示
+/// Toast 工具类 - 顶部显示，使用 awesome_snackbar_content
 class ToastUtils {
   static void showSuccess(BuildContext context, String message) {
-    _showTopSnackBar(
+    _showTopToast(
       context,
-      message,
-      backgroundColor: AppColors.success,
-      icon: Icons.check_circle_rounded,
+      title: '成功',
+      message: message,
+      contentType: ContentType.success,
     );
   }
 
   static void showError(BuildContext context, String message) {
-    _showTopSnackBar(
+    _showTopToast(
       context,
-      message,
-      backgroundColor: AppColors.error,
-      icon: Icons.error_rounded,
+      title: '错误',
+      message: message,
+      contentType: ContentType.failure,
     );
   }
 
   static void showWarning(BuildContext context, String message) {
-    _showTopSnackBar(
+    _showTopToast(
       context,
-      message,
-      backgroundColor: Colors.orange,
-      icon: Icons.warning_rounded,
+      title: '警告',
+      message: message,
+      contentType: ContentType.warning,
     );
   }
 
   static void showInfo(BuildContext context, String message) {
-    _showTopSnackBar(
+    _showTopToast(
       context,
-      message,
-      backgroundColor: AppColors.primary,
-      icon: Icons.info_rounded,
+      title: '提示',
+      message: message,
+      contentType: ContentType.help,
     );
   }
 
-  static void _showTopSnackBar(
-    BuildContext context,
-    String message, {
-    required Color backgroundColor,
-    required IconData icon,
+  static void _showTopToast(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required ContentType contentType,
     Duration duration = const Duration(seconds: 2),
   }) {
     final overlay = Overlay.of(context);
@@ -51,9 +51,9 @@ class ToastUtils {
 
     overlayEntry = OverlayEntry(
       builder: (context) => _TopToast(
+        title: title,
         message: message,
-        backgroundColor: backgroundColor,
-        icon: icon,
+        contentType: contentType,
         onDismiss: () => overlayEntry.remove(),
         duration: duration,
       ),
@@ -64,16 +64,16 @@ class ToastUtils {
 }
 
 class _TopToast extends StatefulWidget {
+  final String title;
   final String message;
-  final Color backgroundColor;
-  final IconData icon;
+  final ContentType contentType;
   final VoidCallback onDismiss;
   final Duration duration;
 
   const _TopToast({
+    required this.title,
     required this.message,
-    required this.backgroundColor,
-    required this.icon,
+    required this.contentType,
     required this.onDismiss,
     required this.duration,
   });
@@ -140,35 +140,10 @@ class _TopToastState extends State<_TopToast> with SingleTickerProviderStateMixi
           opacity: _opacityAnimation,
           child: Material(
             color: Colors.transparent,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: widget.backgroundColor,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: widget.backgroundColor.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Icon(widget.icon, color: Colors.white, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      widget.message,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            child: AwesomeSnackbarContent(
+              title: widget.title,
+              message: widget.message,
+              contentType: widget.contentType,
             ),
           ),
         ),

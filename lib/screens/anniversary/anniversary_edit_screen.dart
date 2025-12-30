@@ -7,6 +7,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/constants/app_constants.dart';
 import '../../models/anniversary.dart';
 import '../../providers/anniversary_provider.dart';
+import '../../widgets/common/toast_utils.dart';
 
 class AnniversaryEditScreen extends ConsumerStatefulWidget {
   final String? anniversaryId;
@@ -308,13 +309,7 @@ class _AnniversaryEditScreenState extends ConsumerState<AnniversaryEditScreen> {
     }
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(isEditing ? '修改成功' : '添加成功'),
-          backgroundColor: AppColors.success,
-          duration: const Duration(seconds: 1),
-        ),
-      );
+      ToastUtils.showSuccess(context, isEditing ? '修改成功' : '添加成功');
       context.pop();
     }
   }

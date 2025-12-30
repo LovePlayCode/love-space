@@ -9,6 +9,7 @@ import '../../core/constants/app_constants.dart';
 import '../../models/daily_log.dart';
 import '../../providers/calendar_provider.dart';
 import '../../providers/album_provider.dart';
+import '../../widgets/common/toast_utils.dart';
 
 class DailyDetailScreen extends ConsumerStatefulWidget {
   final String dateStr;
@@ -278,13 +279,7 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
     }
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('保存成功'),
-          backgroundColor: AppColors.success,
-          duration: Duration(seconds: 1),
-        ),
-      );
+      ToastUtils.showSuccess(context, '保存成功');
       context.pop();
     }
   }

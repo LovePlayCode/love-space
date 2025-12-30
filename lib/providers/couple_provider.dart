@@ -75,9 +75,10 @@ class CoupleNotifier extends StateNotifier<AsyncValue<CoupleInfo>> {
 }
 
 /// 情侣信息 Provider
-final coupleProvider = StateNotifierProvider<CoupleNotifier, AsyncValue<CoupleInfo>>((ref) {
-  return CoupleNotifier();
-});
+final coupleProvider =
+    StateNotifierProvider<CoupleNotifier, AsyncValue<CoupleInfo>>((ref) {
+      return CoupleNotifier();
+    });
 
 /// 在一起天数 Provider
 final daysTogetherProvider = Provider<int>((ref) {
