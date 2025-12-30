@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/media_item.dart';
@@ -69,6 +70,10 @@ class AlbumNotifier extends StateNotifier<AsyncValue<List<MediaItem>>> {
       _ref.read(importProgressProvider.notifier).state = ImportProgress.selecting;
 
       final xFiles = await _mediaService.pickImages(maxImages: maxImages);
+      debugPrint('[Import] 选择的图片数量: ${xFiles.length}');
+      for (int i = 0; i < xFiles.length; i++) {
+        debugPrint('[Import] 图片[$i]: ${xFiles[i].path}');
+      }
       
       if (xFiles.isEmpty) {
         _ref.read(importProgressProvider.notifier).state = ImportProgress.idle;
