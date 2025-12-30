@@ -34,11 +34,10 @@ class AnniversaryScreen extends ConsumerWidget {
           return _buildAnniversaryList(context, ref, anniversaries);
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => context.push(AppRoutes.anniversaryAdd),
         backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add_rounded, color: AppColors.textWhite),
-        label: const Text('添加纪念日', style: TextStyle(color: AppColors.textWhite)),
+        child: const Icon(Icons.add_rounded, color: AppColors.textWhite),
       ),
     );
   }
@@ -56,10 +55,16 @@ class AnniversaryScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAnniversaryList(BuildContext context, WidgetRef ref, List<Anniversary> anniversaries) {
+  Widget _buildAnniversaryList(
+    BuildContext context,
+    WidgetRef ref,
+    List<Anniversary> anniversaries,
+  ) {
     // 分组：即将到来、已过去
     final upcoming = anniversaries.where((a) => a.daysUntil >= 0).toList();
-    final past = anniversaries.where((a) => a.daysUntil < 0 && !a.isRecurring).toList();
+    final past = anniversaries
+        .where((a) => a.daysUntil < 0 && !a.isRecurring)
+        .toList();
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -67,26 +72,34 @@ class AnniversaryScreen extends ConsumerWidget {
         if (upcoming.isNotEmpty) ...[
           const _SectionHeader(title: '即将到来', icon: Icons.upcoming_rounded),
           const SizedBox(height: 12),
-          ...upcoming.map((a) => _AnniversaryCard(
-            anniversary: a,
-            onTap: () => _showAnniversaryOptions(context, ref, a),
-          )),
+          ...upcoming.map(
+            (a) => _AnniversaryCard(
+              anniversary: a,
+              onTap: () => _showAnniversaryOptions(context, ref, a),
+            ),
+          ),
           const SizedBox(height: 24),
         ],
         if (past.isNotEmpty) ...[
           const _SectionHeader(title: '已过去', icon: Icons.history_rounded),
           const SizedBox(height: 12),
-          ...past.map((a) => _AnniversaryCard(
-            anniversary: a,
-            onTap: () => _showAnniversaryOptions(context, ref, a),
-          )),
+          ...past.map(
+            (a) => _AnniversaryCard(
+              anniversary: a,
+              onTap: () => _showAnniversaryOptions(context, ref, a),
+            ),
+          ),
         ],
         const SizedBox(height: 100),
       ],
     );
   }
 
-  void _showAnniversaryOptions(BuildContext context, WidgetRef ref, Anniversary anniversary) {
+  void _showAnniversaryOptions(
+    BuildContext context,
+    WidgetRef ref,
+    Anniversary anniversary,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.cardBackground,
@@ -152,16 +165,27 @@ class AnniversaryScreen extends ConsumerWidget {
               const SizedBox(height: 20),
               const Divider(),
               ListTile(
-                leading: const Icon(Icons.edit_rounded, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.edit_rounded,
+                  color: AppColors.primary,
+                ),
                 title: const Text('编辑'),
                 onTap: () {
                   Navigator.pop(context);
-                  context.push('${AppRoutes.anniversaryEdit}?id=${anniversary.id}');
+                  context.push(
+                    '${AppRoutes.anniversaryEdit}?id=${anniversary.id}',
+                  );
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
-                title: const Text('删除', style: TextStyle(color: AppColors.error)),
+                leading: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: AppColors.error,
+                ),
+                title: const Text(
+                  '删除',
+                  style: TextStyle(color: AppColors.error),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _confirmDelete(context, ref, anniversary);
@@ -174,7 +198,11 @@ class AnniversaryScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, Anniversary anniversary) {
+  void _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    Anniversary anniversary,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -189,7 +217,9 @@ class AnniversaryScreen extends ConsumerWidget {
             onPressed: () async {
               Navigator.pop(context);
               if (anniversary.id != null) {
-                await ref.read(anniversaryProvider.notifier).deleteAnniversary(anniversary.id!);
+                await ref
+                    .read(anniversaryProvider.notifier)
+                    .deleteAnniversary(anniversary.id!);
               }
             },
             child: const Text('删除', style: TextStyle(color: AppColors.error)),
@@ -225,10 +255,7 @@ class _AnniversaryCard extends StatelessWidget {
   final Anniversary anniversary;
   final VoidCallback onTap;
 
-  const _AnniversaryCard({
-    required this.anniversary,
-    required this.onTap,
-  });
+  const _AnniversaryCard({required this.anniversary, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -286,7 +313,9 @@ class _AnniversaryCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: isToday ? AppColors.textWhite : AppColors.textPrimary,
+                            color: isToday
+                                ? AppColors.textWhite
+                                : AppColors.textPrimary,
                           ),
                         ),
                       ),
@@ -294,7 +323,9 @@ class _AnniversaryCard extends StatelessWidget {
                         Icon(
                           Icons.repeat_rounded,
                           size: 16,
-                          color: isToday ? AppColors.textWhite.withValues(alpha: 0.7) : AppColors.textHint,
+                          color: isToday
+                              ? AppColors.textWhite.withValues(alpha: 0.7)
+                              : AppColors.textHint,
                         ),
                     ],
                   ),
@@ -308,7 +339,8 @@ class _AnniversaryCard extends StatelessWidget {
                           : AppColors.textHint,
                     ),
                   ),
-                  if (anniversary.note != null && anniversary.note!.isNotEmpty) ...[
+                  if (anniversary.note != null &&
+                      anniversary.note!.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
                       anniversary.note!,
@@ -333,8 +365,8 @@ class _AnniversaryCard extends StatelessWidget {
                 color: isToday
                     ? AppColors.backgroundWhite
                     : isUpcoming
-                        ? AppColors.primary
-                        : AppColors.primaryLighter,
+                    ? AppColors.primary
+                    : AppColors.primaryLighter,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
@@ -343,16 +375,16 @@ class _AnniversaryCard extends StatelessWidget {
                     isToday
                         ? '🎉'
                         : anniversary.daysUntil >= 0
-                            ? '${anniversary.daysUntil}'
-                            : '${-anniversary.daysUntil}',
+                        ? '${anniversary.daysUntil}'
+                        : '${-anniversary.daysUntil}',
                     style: TextStyle(
                       fontSize: isToday ? 20 : 18,
                       fontWeight: FontWeight.w700,
                       color: isToday
                           ? AppColors.primary
                           : isUpcoming
-                              ? AppColors.textWhite
-                              : AppColors.primary,
+                          ? AppColors.textWhite
+                          : AppColors.primary,
                     ),
                   ),
                   if (!isToday)
@@ -360,7 +392,9 @@ class _AnniversaryCard extends StatelessWidget {
                       anniversary.daysUntil >= 0 ? '天后' : '天前',
                       style: TextStyle(
                         fontSize: 10,
-                        color: isUpcoming ? AppColors.textWhite : AppColors.primary,
+                        color: isUpcoming
+                            ? AppColors.textWhite
+                            : AppColors.primary,
                       ),
                     ),
                 ],
