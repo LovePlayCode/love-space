@@ -102,6 +102,7 @@ class _MediaPickerScreenState extends ConsumerState<MediaPickerScreen> {
     if (_selectedAssets.isEmpty) return;
 
     final assets = _selectedAssets.toList();
+    debugPrint('selected assets: $assets');
     context.pop(); // 先关闭选择器
 
     // 导入资源
