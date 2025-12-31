@@ -42,9 +42,7 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
             // 最近照片
-            SliverToBoxAdapter(
-              child: _buildRecentPhotos(context, albumAsync),
-            ),
+            SliverToBoxAdapter(child: _buildRecentPhotos(context, albumAsync)),
             // 底部间距
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
@@ -301,7 +299,10 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRecentPhotos(BuildContext context, AsyncValue<List<MediaItem>> albumAsync) {
+  Widget _buildRecentPhotos(
+    BuildContext context,
+    AsyncValue<List<MediaItem>> albumAsync,
+  ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       child: Column(
@@ -317,11 +318,13 @@ class HomeScreen extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+
           albumAsync.when(
             loading: () => const SizedBox(
               height: 120,
-              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
             ),
             error: (_, __) => _buildEmptyCard(
               icon: Icons.photo_library_rounded,
@@ -385,7 +388,10 @@ class HomeScreen extends ConsumerWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   color: AppColors.divider,
-                  child: const Icon(Icons.broken_image_rounded, color: AppColors.textHint),
+                  child: const Icon(
+                    Icons.broken_image_rounded,
+                    color: AppColors.textHint,
+                  ),
                 ),
               ),
               if (item.isVideo)
@@ -445,10 +451,7 @@ class HomeScreen extends ConsumerWidget {
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textHint,
-                ),
+                style: const TextStyle(fontSize: 13, color: AppColors.textHint),
               ),
             ],
           ),

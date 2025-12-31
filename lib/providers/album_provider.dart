@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:photo_manager/photo_manager.dart';
 import '../models/media_item.dart';
 import '../services/media_service.dart';
 import '../services/database_service.dart';
@@ -57,43 +57,18 @@ class AlbumNotifier extends StateNotifier<AsyncValue<List<MediaItem>>> {
     await _loadMediaItems();
   }
 
-  /// 从相册选择并导入图片（带进度显示）
-  Future<List<MediaItem>> pickAndImportImages({int maxImages = 100}) async {
-    // 防止重复导入
-    if (_isImporting) {
+  /// 导入选中的资源（支持图片/视频/Live Photo）
+  Future<List<MediaItem>> importAssets(List<AssetEntity> assets) async {
+    if (_isImporting || assets.isEmpty) {
       return [];
     }
     _isImporting = true;
 
     try {
-      // 阶段1：选择图片（显示"正在加载图片"）
-      _ref.read(importProgressProvider.notifier).state = ImportProgress.selecting;
-
-      final xFiles = await _mediaService.pickImages(maxImages: maxImages);
-      debugPrint('[Import] 选择的图片数量: ${xFiles.length}');
-      for (int i = 0; i < xFiles.length; i++) {
-        debugPrint('[Import] 图片[$i]: ${xFiles[i].path}');
-      }
-      
-      if (xFiles.isEmpty) {
-        _ref.read(importProgressProvider.notifier).state = ImportProgress.idle;
-        return [];
-      }
-
-      // 去重：根据文件路径去重
-      final uniquePaths = <String>{};
-      final uniqueFiles = <XFile>[];
-      for (final xFile in xFiles) {
-        if (uniquePaths.add(xFile.path)) {
-          uniqueFiles.add(xFile);
-        }
-      }
-
-      final total = uniqueFiles.length;
+      final total = assets.length;
       final List<MediaItem> importedItems = [];
-      int completed = 0;
 
-      // 阶段2：导入图片（显示进度）
+      // 开始导入
       _ref.read(importProgressProvider.notifier).state = ImportProgress(
         total: total,
         completed: 0,
@@ -101,16 +76,19 @@ class AlbumNotifier extends StateNotifier<AsyncValue<List<MediaItem>>> {
       );
 
       // 串行处理，避免并发问题
-      for (final xFile in uniqueFiles) {
-        final item = await _mediaService.importImage(xFile);
+      for (int i = 0; i < assets.length; i++) {
+        final asset = assets[i];
+        debugPrint('[Import] 导入资源 ${i + 1}/$total: ${asset.id}, type=${asset.type}, isLivePhoto=${_mediaService.isLivePhoto(asset)}');
+
+        final item = await _mediaService.importAsset(asset);
         if (item != null) {
           importedItems.add(item);
         }
-        completed++;
+
         // 更新进度
         _ref.read(importProgressProvider.notifier).state = ImportProgress(
           total: total,
-          completed: completed,
+          completed: i + 1,
           stage: ImportStage.importing,
         );
       }
@@ -118,57 +96,13 @@ class AlbumNotifier extends StateNotifier<AsyncValue<List<MediaItem>>> {
       if (importedItems.isNotEmpty) {
         await refresh();
       }
+
+      debugPrint('[Import] 导入完成，成功 ${importedItems.length}/$total');
       return importedItems;
     } finally {
-      // 导入完成，重置状态
       _ref.read(importProgressProvider.notifier).state = ImportProgress.idle;
       _isImporting = false;
     }
-  }
-
-  /// 导入单张图片
-  Future<MediaItem?> importSingleImage(XFile xFile, {DateTime? takenDate}) async {
-    final item = await _mediaService.importImage(xFile, takenDate: takenDate);
-    if (item != null) {
-      await refresh();
-    }
-    return item;
-  }
-
-  /// 拍照并导入
-  Future<MediaItem?> takePhotoAndImport() async {
-    final xFile = await _mediaService.takePhoto();
-    if (xFile == null) return null;
-
-    final item = await _mediaService.importImage(xFile);
-    if (item != null) {
-      await refresh();
-    }
-    return item;
-  }
-
-  /// 选择并导入视频
-  Future<MediaItem?> pickAndImportVideo() async {
-    final xFile = await _mediaService.pickVideo();
-    if (xFile == null) return null;
-
-    final item = await _mediaService.importVideo(xFile);
-    if (item != null) {
-      await refresh();
-    }
-    return item;
-  }
-
-  /// 录制并导入视频
-  Future<MediaItem?> recordAndImportVideo() async {
-    final xFile = await _mediaService.recordVideo();
-    if (xFile == null) return null;
-
-    final item = await _mediaService.importVideo(xFile);
-    if (item != null) {
-      await refresh();
-    }
-    return item;
   }
 
   /// 删除媒体项

@@ -12,6 +12,7 @@ import '../../models/tag.dart';
 import '../../providers/album_provider.dart';
 import '../../providers/tag_provider.dart';
 import '../../services/database_service.dart';
+import '../../widgets/live_photo_player.dart';
 
 class PhotoDetailScreen extends ConsumerStatefulWidget {
   final String photoId;
@@ -72,6 +73,7 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
     if (item != null && item.isVideo) {
       _initVideoPlayer();
     }
+    // Live Photo 使用 LivePhotoPlayer 组件，不需要在这里初始化
   }
   
   Future<void> _initVideoPlayer() async {
@@ -209,17 +211,9 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
       ),
       body: Stack(
         children: [
-          // 图片/视频预览
+          // 图片/视频/Live Photo 预览
           Positioned.fill(
-            child: _mediaItem!.isVideo
-                ? _buildVideoPlayer()
-                : Center(
-                    child: InteractiveViewer(
-                      minScale: 0.5,
-                      maxScale: 4.0,
-                      child: _buildImage(),
-                    ),
-                  ),
+            child: _buildMediaPreview(),
           ),
           // 底部信息
           Positioned(
@@ -231,6 +225,29 @@ class _PhotoDetailScreenState extends ConsumerState<PhotoDetailScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildMediaPreview() {
+    if (_mediaItem!.isVideo) {
+      return _buildVideoPlayer();
+    } else if (_mediaItem!.isLivePhoto && _mediaItem!.liveVideoPath != null) {
+      // Live Photo：自动播放视频
+      return LivePhotoPlayer(
+        imagePath: _mediaItem!.localPath,
+        videoPath: _mediaItem!.liveVideoPath!,
+        autoPlay: true,
+        loop: true,
+      );
+    } else {
+      // 普通图片
+      return Center(
+        child: InteractiveViewer(
+          minScale: 0.5,
+          maxScale: 4.0,
+          child: _buildImage(),
+        ),
+      );
+    }
   }
   
   Widget _buildVideoPlayer() {

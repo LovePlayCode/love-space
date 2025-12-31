@@ -398,137 +398,8 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen> {
   }
 
   void _showAddOptions(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.cardBackground,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.divider,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text('添加照片/视频', style: AppTextStyles.subtitle1),
-                const SizedBox(height: 12),
-                ListTile(
-                  leading: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLighter,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.photo_library_rounded,
-                      color: AppColors.primary,
-                      size: 22,
-                    ),
-                  ),
-                  title: const Text('从相册选择照片'),
-                  subtitle: const Text('选择多张照片'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _pickFromGallery(ref);
-                  },
-                ),
-                ListTile(
-                  leading: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLighter,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.videocam_rounded,
-                      color: AppColors.primary,
-                      size: 22,
-                    ),
-                  ),
-                  title: const Text('从相册选择视频'),
-                  subtitle: const Text('选择一个视频'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _pickVideo(ref);
-                  },
-                ),
-                ListTile(
-                  leading: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLighter,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt_rounded,
-                      color: AppColors.primary,
-                      size: 22,
-                    ),
-                  ),
-                  title: const Text('拍照'),
-                  subtitle: const Text('立即拍摄一张'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _takePhoto(ref);
-                  },
-                ),
-                ListTile(
-                  leading: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLighter,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.video_camera_back_rounded,
-                      color: AppColors.primary,
-                      size: 22,
-                    ),
-                  ),
-                  title: const Text('录制视频'),
-                  subtitle: const Text('立即录制一段'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _recordVideo(ref);
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _pickFromGallery(WidgetRef ref) async {
-    await ref.read(albumProvider.notifier).pickAndImportImages();
-  }
-
-  Future<void> _takePhoto(WidgetRef ref) async {
-    await ref.read(albumProvider.notifier).takePhotoAndImport();
-  }
-
-  Future<void> _pickVideo(WidgetRef ref) async {
-    await ref.read(albumProvider.notifier).pickAndImportVideo();
-  }
-
-  Future<void> _recordVideo(WidgetRef ref) async {
-    await ref.read(albumProvider.notifier).recordAndImportVideo();
+    // 直接打开媒体选择器
+    context.push('/album/picker');
   }
 }
 
@@ -644,6 +515,37 @@ class _MediaCard extends StatelessWidget {
                         SizedBox(width: 4),
                         Text(
                           '视频',
+                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              // Live Photo 标识（右上角）
+              if (item.isLivePhoto)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.motion_photos_on_rounded,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          '实况',
                           style: TextStyle(color: Colors.white, fontSize: 10),
                         ),
                       ],

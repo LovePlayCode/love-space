@@ -1,8 +1,9 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:photo_manager/photo_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../providers/couple_provider.dart';
@@ -291,11 +292,41 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
   Future<void> _pickAvatar(bool isMe) async {
     final mediaService = MediaService();
-    final xFile = await mediaService.pickSingleImage();
-    if (xFile == null) return;
+    final hasPermission = await mediaService.requestPermission();
+    if (!hasPermission) {
+      if (mounted) {
+        ToastUtils.showError(context, '需要相册访问权限');
+      }
+      return;
+    }
 
-    final originalFile = File(xFile.path);
-    final savedPath = await mediaService.saveFileToAppDir(originalFile);
+    // 获取相册
+    final albums = await PhotoManager.getAssetPathList(type: RequestType.image);
+    if (albums.isEmpty) return;
+
+    // 获取最近的图片
+    final assets = await albums.first.getAssetListPaged(page: 0, size: 100);
+    if (assets.isEmpty) return;
+
+    // 显示图片选择器
+    if (!mounted) return;
+    final selected = await showModalBottomSheet<AssetEntity>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.cardBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => _AvatarPickerSheet(assets: assets),
+    );
+
+    if (selected == null) return;
+
+    // 获取文件并保存
+    final file = await selected.originFile;
+    if (file == null) return;
+
+    final savedPath = await mediaService.saveFileToAppDir(file);
 
     setState(() {
       if (isMe) {
@@ -373,5 +404,80 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         setState(() => _isLoading = false);
       }
     }
+  }
+}
+
+/// 头像选择器 Sheet
+class _AvatarPickerSheet extends StatelessWidget {
+  final List<AssetEntity> assets;
+
+  const _AvatarPickerSheet({required this.assets});
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) => Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.divider,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '选择头像',
+                  style: AppTextStyles.subtitle1,
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: GridView.builder(
+              controller: scrollController,
+              padding: const EdgeInsets.all(2),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                mainAxisSpacing: 2,
+                crossAxisSpacing: 2,
+              ),
+              itemCount: assets.length,
+              itemBuilder: (context, index) {
+                final asset = assets[index];
+                return GestureDetector(
+                  onTap: () => Navigator.pop(context, asset),
+                  child: FutureBuilder<Uint8List?>(
+                    future: asset.thumbnailDataWithSize(
+                      const ThumbnailSize(200, 200),
+                      quality: 80,
+                    ),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data != null) {
+                        return Image.memory(
+                          snapshot.data!,
+                          fit: BoxFit.cover,
+                        );
+                      }
+                      return Container(color: AppColors.divider);
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

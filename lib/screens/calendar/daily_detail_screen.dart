@@ -8,7 +8,6 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/constants/app_constants.dart';
 import '../../models/daily_log.dart';
 import '../../providers/calendar_provider.dart';
-import '../../providers/album_provider.dart';
 import '../../widgets/common/toast_utils.dart';
 
 class DailyDetailScreen extends ConsumerStatefulWidget {
@@ -259,8 +258,8 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
   }
 
   Future<void> _addPhoto() async {
-    await ref.read(albumProvider.notifier).pickAndImportImages();
-    // 照片会自动刷新
+    // 打开媒体选择器
+    context.push('/album/picker');
   }
 
   Future<void> _saveLog() async {

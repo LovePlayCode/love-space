@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../screens/home/home_screen.dart';
 import '../../screens/album/album_screen.dart';
 import '../../screens/album/photo_detail_screen.dart';
+import '../../screens/album/media_picker_screen.dart';
 import '../../screens/calendar/calendar_screen.dart';
 import '../../screens/calendar/daily_detail_screen.dart';
 import '../../screens/anniversary/anniversary_screen.dart';
@@ -18,6 +19,7 @@ class AppRoutes {
   static const String home = '/';
   static const String album = '/album';
   static const String photoDetail = '/album/photo/:id';
+  static const String mediaPicker = '/album/picker';
   static const String calendar = '/calendar';
   static const String dailyDetail = '/calendar/day/:date';
   static const String anniversary = '/anniversary';
@@ -77,6 +79,10 @@ class AppRouter {
           final id = state.pathParameters['id'] ?? '';
           return PhotoDetailScreen(photoId: id);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.mediaPicker,
+        builder: (context, state) => const MediaPickerScreen(),
       ),
       GoRoute(
         path: AppRoutes.dailyDetail,

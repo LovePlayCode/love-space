@@ -41,6 +41,7 @@ class DatabaseService {
         type INTEGER NOT NULL,
         local_path TEXT NOT NULL,
         thumbnail_path TEXT,
+        live_video_path TEXT,
         taken_date INTEGER NOT NULL,
         caption TEXT,
         width INTEGER,
@@ -136,6 +137,10 @@ class DatabaseService {
     if (oldVersion < 4) {
       // 添加标签 icon 字段
       await db.execute('ALTER TABLE tags ADD COLUMN icon TEXT');
+    }
+    if (oldVersion < 5) {
+      // 添加 live_video_path 字段支持实况照片
+      await db.execute('ALTER TABLE media_items ADD COLUMN live_video_path TEXT');
     }
   }
 

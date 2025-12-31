@@ -33,7 +33,9 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>LoveSpace 需要保存照片到您的相册</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>LoveSpace 需要访问您的相册以保存和选择照片</string>
+	<string>LoveSpace 需要访问您的相册以保存和选择照片（包括实况照片）</string>
+	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
+	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
