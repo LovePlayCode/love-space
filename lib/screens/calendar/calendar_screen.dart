@@ -24,7 +24,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   Widget build(BuildContext context) {
     final selectedDate = ref.watch(selectedDateProvider);
     final markersAsync = ref.watch(calendarMarkersProvider);
-    final dateLog = ref.watch(dateLogProvider(DailyLog.formatDateStr(selectedDate)));
+    final dateLog = ref.watch(
+      dateLogProvider(DailyLog.formatDateStr(selectedDate)),
+    );
     final dateMediaAsync = ref.watch(dateMediaProvider(selectedDate));
 
     return Scaffold(
@@ -62,7 +64,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
   }
 
-  Widget _buildCalendar(DateTime selectedDate, AsyncValue<Set<String>> markersAsync) {
+  Widget _buildCalendar(
+    DateTime selectedDate,
+    AsyncValue<Set<String>> markersAsync,
+  ) {
     final markers = markersAsync.maybeWhen(
       data: (data) => data,
       orElse: () => <String>{},
@@ -93,8 +98,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           formatButtonVisible: false,
           titleCentered: true,
           titleTextStyle: AppTextStyles.subtitle1,
-          leftChevronIcon: const Icon(Icons.chevron_left_rounded, color: AppColors.primary),
-          rightChevronIcon: const Icon(Icons.chevron_right_rounded, color: AppColors.primary),
+          leftChevronIcon: const Icon(
+            Icons.chevron_left_rounded,
+            color: AppColors.primary,
+          ),
+          rightChevronIcon: const Icon(
+            Icons.chevron_right_rounded,
+            color: AppColors.primary,
+          ),
         ),
         daysOfWeekStyle: const DaysOfWeekStyle(
           weekdayStyle: TextStyle(
@@ -154,7 +165,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
   }
 
-  Widget _buildDayContent(DateTime selectedDate, DailyLog? log, AsyncValue<List> mediaAsync) {
+  Widget _buildDayContent(
+    DateTime selectedDate,
+    DailyLog? log,
+    AsyncValue<List> mediaAsync,
+  ) {
     final dateStr = DateFormat('M月d日 EEEE', 'zh_CN').format(selectedDate);
     final isToday = isSameDay(selectedDate, DateTime.now());
 
@@ -166,14 +181,14 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           // 日期标题
           Row(
             children: [
-              Text(
-                dateStr,
-                style: AppTextStyles.subtitle1,
-              ),
+              Text(dateStr, style: AppTextStyles.subtitle1),
               if (isToday)
                 Container(
                   margin: const EdgeInsets.only(left: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(10),
@@ -201,10 +216,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               ),
               child: Row(
                 children: [
-                  Text(
-                    log!.mood!,
-                    style: const TextStyle(fontSize: 24),
-                  ),
+                  Text(log!.mood!, style: const TextStyle(fontSize: 24)),
                   const SizedBox(width: 12),
                   const Text(
                     '今日心情',
@@ -231,7 +243,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.edit_note_rounded, color: AppColors.primary, size: 20),
+                      Icon(
+                        Icons.edit_note_rounded,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
                       SizedBox(width: 8),
                       Text(
                         '日记',
@@ -244,10 +260,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    log!.content!,
-                    style: AppTextStyles.body2,
-                  ),
+                  Text(log!.content!, style: AppTextStyles.body2),
                 ],
               ),
             ),
@@ -279,6 +292,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.wb_sunny_rounded,
@@ -288,14 +302,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           const SizedBox(height: 12),
           const Text(
             '这一天还没有记录',
-            style: TextStyle(
-              color: AppColors.textHint,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: AppColors.textHint, fontSize: 14),
           ),
           const SizedBox(height: 8),
           TextButton.icon(
-            onPressed: () => _navigateToDayDetail(ref.read(selectedDateProvider)),
+            onPressed: () =>
+                _navigateToDayDetail(ref.read(selectedDateProvider)),
             icon: const Icon(Icons.add_rounded),
             label: const Text('添加记录'),
           ),
@@ -310,7 +322,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       children: [
         const Row(
           children: [
-            Icon(Icons.photo_library_rounded, color: AppColors.primary, size: 20),
+            Icon(
+              Icons.photo_library_rounded,
+              color: AppColors.primary,
+              size: 20,
+            ),
             SizedBox(width: 8),
             Text(
               '照片',

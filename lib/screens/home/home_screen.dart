@@ -304,7 +304,7 @@ class HomeScreen extends ConsumerWidget {
     AsyncValue<List<MediaItem>> albumAsync,
   ) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -343,18 +343,22 @@ class HomeScreen extends ConsumerWidget {
               }
               // 取最近6张
               final recentItems = items.take(6).toList();
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: 1,
-                ),
-                itemCount: recentItems.length,
-                itemBuilder: (context, index) {
-                  return _buildPhotoCard(context, recentItems[index]);
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final itemSize = (constraints.maxWidth - 16) / 3;
+                  return Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: recentItems
+                        .map(
+                          (item) => SizedBox(
+                            width: itemSize,
+                            height: itemSize,
+                            child: _buildPhotoCard(context, item),
+                          ),
+                        )
+                        .toList(),
+                  );
                 },
               );
             },
