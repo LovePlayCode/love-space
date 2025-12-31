@@ -47,6 +47,7 @@ class _MediaPickerScreenState extends ConsumerState<MediaPickerScreen> {
     setState(() => _hasPermission = true);
 
     final albums = await _mediaService.getAlbums();
+    debugPrint('albums: $albums');
     if (albums.isEmpty) {
       setState(() => _isLoading = false);
       return;
@@ -286,7 +287,7 @@ class _MediaPickerScreenState extends ConsumerState<MediaPickerScreen> {
 }
 
 /// 资源缩略图组件
-class _AssetTile extends StatelessWidget {
+class _AssetTile extends StatefulWidget {
   final AssetEntity asset;
   final bool isSelected;
   final int selectionIndex;
@@ -302,30 +303,41 @@ class _AssetTile extends StatelessWidget {
   });
 
   @override
+  State<_AssetTile> createState() => _AssetTileState();
+}
+
+class _AssetTileState extends State<_AssetTile> {
+  Uint8List? _thumbnailData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThumbnail();
+  }
+
+  Future<void> _loadThumbnail() async {
+    final data = await widget.asset.thumbnailDataWithSize(
+      const ThumbnailSize(200, 200),
+      quality: 80,
+    );
+    if (mounted) {
+      setState(() => _thumbnailData = data);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // 缩略图
-          FutureBuilder<Uint8List?>(
-            future: asset.thumbnailDataWithSize(
-              const ThumbnailSize(200, 200),
-              quality: 80,
-            ),
-            builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data != null) {
-                return Image.memory(
-                  snapshot.data!,
-                  fit: BoxFit.cover,
-                );
-              }
-              return Container(color: AppColors.divider);
-            },
-          ),
+          // 缩略图（已缓存，不会重复加载）
+          _thumbnailData != null
+              ? Image.memory(_thumbnailData!, fit: BoxFit.cover)
+              : Container(color: AppColors.divider),
           // Live Photo 标识
-          if (isLivePhoto)
+          if (widget.isLivePhoto)
             Positioned(
               top: 4,
               left: 4,
@@ -353,7 +365,7 @@ class _AssetTile extends StatelessWidget {
               ),
             ),
           // 视频标识
-          if (asset.type == AssetType.video)
+          if (widget.asset.type == AssetType.video)
             Positioned(
               bottom: 4,
               right: 4,
@@ -373,7 +385,7 @@ class _AssetTile extends StatelessWidget {
                     ),
                     const SizedBox(width: 2),
                     Text(
-                      _formatDuration(asset.videoDuration),
+                      _formatDuration(widget.asset.videoDuration),
                       style: const TextStyle(color: Colors.white, fontSize: 10),
                     ),
                   ],
@@ -381,7 +393,7 @@ class _AssetTile extends StatelessWidget {
               ),
             ),
           // 选中状态
-          if (isSelected)
+          if (widget.isSelected)
             Container(
               color: AppColors.primary.withValues(alpha: 0.3),
             ),
@@ -393,14 +405,14 @@ class _AssetTile extends StatelessWidget {
               width: 24,
               height: 24,
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : Colors.black38,
+                color: widget.isSelected ? AppColors.primary : Colors.black38,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
-              child: isSelected
+              child: widget.isSelected
                   ? Center(
                       child: Text(
-                        '${selectionIndex + 1}',
+                        '${widget.selectionIndex + 1}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,

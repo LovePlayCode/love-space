@@ -175,7 +175,7 @@ class _LivePhotoPlayerState extends State<LivePhotoPlayer> {
 
   Widget _buildLivePhotoIndicator() {
     return Positioned(
-      top: 16,
+      top: MediaQuery.of(context).padding.top + 16,
       left: 16,
       child: AnimatedOpacity(
         opacity: _isPlaying ? 1.0 : 0.7,
