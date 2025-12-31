@@ -293,6 +293,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(
             Icons.wb_sunny_rounded,
@@ -308,7 +309,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           TextButton.icon(
             onPressed: () =>
                 _navigateToDayDetail(ref.read(selectedDateProvider)),
-            icon: const Icon(Icons.add_rounded),
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            icon: const Icon(Icons.add_rounded, size: 18),
             label: const Text('添加记录'),
           ),
         ],
