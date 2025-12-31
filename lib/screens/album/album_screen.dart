@@ -558,32 +558,31 @@ class _MediaCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: isSelected
-              ? Border.all(color: AppColors.primary, width: 3)
-              : null,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadowColorLight,
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.cardBackground,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.shadowColorLight,
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(isSelected ? 13 : 16),
-          child: Stack(
-            children: [
-              // 图片/视频缩略图
-              SizedBox(
-                width: double.infinity,
-                height: clampedHeight,
-                child: _buildImage(),
-              ),
-              // 选择模式下的勾选框
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Stack(
+                children: [
+                  // 图片/视频缩略图
+                  SizedBox(
+                    width: double.infinity,
+                    height: clampedHeight,
+                    child: _buildImage(),
+                  ),
+                // 选择模式下的勾选框
               if (isSelectionMode)
                 Positioned(
                   top: 8,
@@ -700,6 +699,20 @@ class _MediaCard extends StatelessWidget {
             ],
           ),
         ),
+          ),
+          // 选中边框层（覆盖在上面，不影响内部布局）
+          if (isSelected)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.primary, width: 3),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -957,7 +970,7 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
     _newTagController.clear();
     String? selectedIcon;
     String? selectedColor;
-    
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -977,7 +990,10 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
                   autofocus: true,
                 ),
                 const SizedBox(height: 16),
-                const Text('选择图标', style: TextStyle(fontWeight: FontWeight.w500)),
+                const Text(
+                  '选择图标',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
                 const SizedBox(height: 8),
                 _buildIconSelector(
                   selectedIcon: selectedIcon,
@@ -987,7 +1003,10 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
                   },
                 ),
                 const SizedBox(height: 16),
-                const Text('选择颜色', style: TextStyle(fontWeight: FontWeight.w500)),
+                const Text(
+                  '选择颜色',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
                 const SizedBox(height: 8),
                 _buildColorSelector(
                   selectedColor: selectedColor,
@@ -1007,11 +1026,13 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
               onPressed: () async {
                 final name = _newTagController.text.trim();
                 if (name.isNotEmpty) {
-                  await ref.read(tagProvider.notifier).createTag(
-                    name,
-                    color: selectedColor,
-                    icon: selectedIcon,
-                  );
+                  await ref
+                      .read(tagProvider.notifier)
+                      .createTag(
+                        name,
+                        color: selectedColor,
+                        icon: selectedIcon,
+                      );
                   if (context.mounted) Navigator.pop(context);
                 }
               },
@@ -1045,9 +1066,13 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: isSelected ? color.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.1),
+                  color: isSelected
+                      ? color.withValues(alpha: 0.2)
+                      : Colors.grey.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: isSelected ? Border.all(color: color, width: 2) : null,
+                  border: isSelected
+                      ? Border.all(color: color, width: 2)
+                      : null,
                 ),
                 child: Icon(
                   icon,
@@ -1080,7 +1105,7 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
       '#FF9800', // 橙色
       '#795548', // 棕色
     ];
-    
+
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -1095,9 +1120,16 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
-              border: isSelected ? Border.all(color: Colors.white, width: 3) : null,
+              border: isSelected
+                  ? Border.all(color: Colors.white, width: 3)
+                  : null,
               boxShadow: isSelected
-                  ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 8)]
+                  ? [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.5),
+                        blurRadius: 8,
+                      ),
+                    ]
                   : null,
             ),
             child: isSelected
@@ -1171,7 +1203,7 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
     _newTagController.text = tag.name;
     String? selectedIcon = tag.icon;
     String? selectedColor = tag.color;
-    
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -1191,7 +1223,10 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
                   autofocus: true,
                 ),
                 const SizedBox(height: 16),
-                const Text('选择图标', style: TextStyle(fontWeight: FontWeight.w500)),
+                const Text(
+                  '选择图标',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
                 const SizedBox(height: 8),
                 _buildIconSelector(
                   selectedIcon: selectedIcon,
@@ -1201,7 +1236,10 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
                   },
                 ),
                 const SizedBox(height: 16),
-                const Text('选择颜色', style: TextStyle(fontWeight: FontWeight.w500)),
+                const Text(
+                  '选择颜色',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
                 const SizedBox(height: 8),
                 _buildColorSelector(
                   selectedColor: selectedColor,
@@ -1221,13 +1259,15 @@ class _TagFilterSheetState extends ConsumerState<_TagFilterSheet> {
               onPressed: () async {
                 final name = _newTagController.text.trim();
                 if (name.isNotEmpty) {
-                  await ref.read(tagProvider.notifier).updateTag(
-                    tag.copyWith(
-                      name: name,
-                      color: selectedColor,
-                      icon: selectedIcon,
-                    ),
-                  );
+                  await ref
+                      .read(tagProvider.notifier)
+                      .updateTag(
+                        tag.copyWith(
+                          name: name,
+                          color: selectedColor,
+                          icon: selectedIcon,
+                        ),
+                      );
                   if (context.mounted) Navigator.pop(context);
                 }
               },
