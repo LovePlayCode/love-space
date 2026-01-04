@@ -119,7 +119,7 @@ final dateMediaProvider = FutureProvider.family<List<MediaItem>, DateTime>((ref,
   return await mediaService.getMediaItemsByDate(date);
 });
 
-/// 日历标记数据 Provider（合并日记和媒体日期）
+/// 日历标记数据 Provider（合并日记、媒体和待办日期）
 final calendarMarkersProvider = FutureProvider<Set<String>>((ref) async {
   final dbService = DatabaseService();
   
@@ -129,6 +129,9 @@ final calendarMarkersProvider = FutureProvider<Set<String>>((ref) async {
   // 获取有媒体的日期
   final mediaDates = await dbService.getMediaDates();
   
+  // 获取有待办的日期
+  final todoDates = await dbService.getTodoDates();
+  
   // 合并
-  return {...logDates, ...mediaDates};
+  return {...logDates, ...mediaDates, ...todoDates};
 });

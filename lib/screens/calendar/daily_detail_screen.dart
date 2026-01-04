@@ -9,6 +9,7 @@ import '../../core/constants/app_constants.dart';
 import '../../models/daily_log.dart';
 import '../../providers/calendar_provider.dart';
 import '../../widgets/common/toast_utils.dart';
+import '../../widgets/todo_list_widget.dart';
 
 class DailyDetailScreen extends ConsumerStatefulWidget {
   final String dateStr;
@@ -64,6 +65,9 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
           children: [
             // 心情选择
             _buildMoodSelector(),
+            const SizedBox(height: 20),
+            // 待办事项
+            TodoListWidget(dateStr: widget.dateStr),
             const SizedBox(height: 20),
             // 日记输入
             _buildContentEditor(),

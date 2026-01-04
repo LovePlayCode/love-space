@@ -5,6 +5,7 @@ import '../models/media_item.dart';
 import '../models/daily_log.dart';
 import '../models/anniversary.dart';
 import '../models/tag.dart';
+import '../models/todo_item.dart';
 
 /// 数据库服务 - 管理 SQLite 数据库操作
 class DatabaseService {
@@ -103,6 +104,18 @@ class DatabaseService {
     // 创建标签索引
     await db.execute('CREATE INDEX idx_media_tags_media_id ON media_tags(media_id)');
     await db.execute('CREATE INDEX idx_media_tags_tag_id ON media_tags(tag_id)');
+
+    // 创建待办事项表
+    await db.execute('''
+      CREATE TABLE todos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        content TEXT NOT NULL,
+        date_str TEXT NOT NULL,
+        is_completed INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+    await db.execute('CREATE INDEX idx_todos_date_str ON todos(date_str)');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -141,6 +154,19 @@ class DatabaseService {
     if (oldVersion < 5) {
       // 添加 live_video_path 字段支持实况照片
       await db.execute('ALTER TABLE media_items ADD COLUMN live_video_path TEXT');
+    }
+    if (oldVersion < 6) {
+      // 添加待办事项表
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS todos (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          content TEXT NOT NULL,
+          date_str TEXT NOT NULL,
+          is_completed INTEGER NOT NULL DEFAULT 0,
+          created_at INTEGER NOT NULL
+        )
+      ''');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_todos_date_str ON todos(date_str)');
     }
   }
 
@@ -511,6 +537,73 @@ class DatabaseService {
       [tagId],
     );
     return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  // ==================== TodoItem 操作 ====================
+
+  /// 插入待办事项
+  Future<int> insertTodo(TodoItem todo) async {
+    final db = await database;
+    return await db.insert('todos', todo.toMap());
+  }
+
+  /// 获取指定日期的待办事项
+  Future<List<TodoItem>> getTodosByDate(String dateStr) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'todos',
+      where: 'date_str = ?',
+      whereArgs: [dateStr],
+      orderBy: 'created_at ASC',
+    );
+    return maps.map((map) => TodoItem.fromMap(map)).toList();
+  }
+
+  /// 更新待办事项
+  Future<void> updateTodo(TodoItem todo) async {
+    final db = await database;
+    await db.update(
+      'todos',
+      todo.toMap(),
+      where: 'id = ?',
+      whereArgs: [todo.id],
+    );
+  }
+
+  /// 切换待办事项完成状态
+  Future<void> toggleTodoComplete(int id) async {
+    final db = await database;
+    await db.rawUpdate(
+      'UPDATE todos SET is_completed = 1 - is_completed WHERE id = ?',
+      [id],
+    );
+  }
+
+  /// 删除待办事项
+  Future<void> deleteTodo(int id) async {
+    final db = await database;
+    await db.delete('todos', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// 获取有待办事项的日期集合
+  Future<Set<String>> getTodoDates() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      'SELECT DISTINCT date_str FROM todos',
+    );
+    return maps.map((map) => map['date_str'] as String).toSet();
+  }
+
+  /// 获取指定日期范围内有待办的日期及数量
+  Future<Map<String, int>> getTodoCountsByDateRange(String startDate, String endDate) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      '''SELECT date_str, COUNT(*) as count FROM todos 
+         WHERE date_str >= ? AND date_str <= ? 
+         GROUP BY date_str''',
+      [startDate, endDate],
+    );
+    return {for (var map in maps) map['date_str'] as String: map['count'] as int};
   }
 
   // ==================== 通用操作（原有）====================

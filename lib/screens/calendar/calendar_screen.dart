@@ -8,6 +8,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/daily_log.dart';
 import '../../providers/calendar_provider.dart';
+import '../../providers/todo_provider.dart';
+import '../../models/todo_item.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
   const CalendarScreen({super.key});
@@ -28,6 +30,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       dateLogProvider(DailyLog.formatDateStr(selectedDate)),
     );
     final dateMediaAsync = ref.watch(dateMediaProvider(selectedDate));
+    final todosAsync = ref.watch(todoListProvider(DailyLog.formatDateStr(selectedDate)));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -52,7 +55,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           const Divider(height: 1),
           // 选中日期的内容
           Expanded(
-            child: _buildDayContent(selectedDate, dateLog, dateMediaAsync),
+            child: _buildDayContent(selectedDate, dateLog, dateMediaAsync, todosAsync),
           ),
         ],
       ),
@@ -169,6 +172,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     DateTime selectedDate,
     DailyLog? log,
     AsyncValue<List> mediaAsync,
+    AsyncValue<List<TodoItem>> todosAsync,
   ) {
     final dateStr = DateFormat('M月d日 EEEE', 'zh_CN').format(selectedDate);
     final isToday = isSameDay(selectedDate, DateTime.now());
@@ -264,6 +268,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ],
               ),
             ),
+          // 待办事项预览
+          _buildTodoPreview(todosAsync, DailyLog.formatDateStr(selectedDate)),
           // 照片
           mediaAsync.when(
             loading: () => const SizedBox(),
@@ -271,7 +277,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             data: (mediaItems) {
               if (mediaItems.isEmpty) {
                 if (log == null || log.isEmpty) {
-                  return _buildEmptyDay();
+                  return _buildEmptyDay(todosAsync);
                 }
                 return const SizedBox();
               }
@@ -283,7 +289,130 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
   }
 
-  Widget _buildEmptyDay() {
+  Widget _buildTodoPreview(AsyncValue<List<TodoItem>> todosAsync, String dateStr) {
+    return todosAsync.when(
+      loading: () => const SizedBox(),
+      error: (_, _) => const SizedBox(),
+      data: (todos) {
+        if (todos.isEmpty) return const SizedBox();
+        
+        final completedCount = todos.where((t) => t.isCompleted).length;
+        final totalCount = todos.length;
+        
+        return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.cardBackground,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.checklist_rounded,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        '待办事项',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: completedCount == totalCount 
+                          ? AppColors.success.withValues(alpha: 0.1)
+                          : AppColors.primaryLighter,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '$completedCount/$totalCount',
+                      style: TextStyle(
+                        color: completedCount == totalCount 
+                            ? AppColors.success 
+                            : AppColors.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // 显示最多 3 个待办
+              ...todos.take(3).map((todo) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      todo.isCompleted 
+                          ? Icons.check_circle_rounded 
+                          : Icons.radio_button_unchecked,
+                      size: 16,
+                      color: todo.isCompleted 
+                          ? AppColors.success 
+                          : AppColors.textHint,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        todo.content,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: todo.isCompleted 
+                              ? AppColors.textHint 
+                              : AppColors.textPrimary,
+                          decoration: todo.isCompleted 
+                              ? TextDecoration.lineThrough 
+                              : null,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+              if (todos.length > 3)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    '还有 ${todos.length - 3} 项...',
+                    style: const TextStyle(
+                      color: AppColors.textHint,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyDay(AsyncValue<List<TodoItem>> todosAsync) {
+    // 如果有待办事项，不显示空状态
+    final hasTodos = todosAsync.maybeWhen(
+      data: (todos) => todos.isNotEmpty,
+      orElse: () => false,
+    );
+    if (hasTodos) return const SizedBox();
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
