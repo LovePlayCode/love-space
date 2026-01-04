@@ -294,8 +294,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       loading: () => const SizedBox(),
       error: (_, _) => const SizedBox(),
       data: (todos) {
-        if (todos.isEmpty) return const SizedBox();
-        
         final completedCount = todos.where((t) => t.isCompleted).length;
         final totalCount = todos.length;
         
@@ -310,6 +308,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 标题栏
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -331,77 +330,170 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       ),
                     ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: completedCount == totalCount 
-                          ? AppColors.success.withValues(alpha: 0.1)
-                          : AppColors.primaryLighter,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '$completedCount/$totalCount',
-                      style: TextStyle(
+                  if (totalCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
                         color: completedCount == totalCount 
-                            ? AppColors.success 
-                            : AppColors.primary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
+                            ? AppColors.success.withValues(alpha: 0.1)
+                            : AppColors.primaryLighter,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$completedCount/$totalCount',
+                        style: TextStyle(
+                          color: completedCount == totalCount 
+                              ? AppColors.success 
+                              : AppColors.primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
               const SizedBox(height: 12),
-              // 显示最多 3 个待办
-              ...todos.take(3).map((todo) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Icon(
-                      todo.isCompleted 
-                          ? Icons.check_circle_rounded 
-                          : Icons.radio_button_unchecked,
-                      size: 16,
-                      color: todo.isCompleted 
-                          ? AppColors.success 
-                          : AppColors.textHint,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        todo.content,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: todo.isCompleted 
-                              ? AppColors.textHint 
-                              : AppColors.textPrimary,
-                          decoration: todo.isCompleted 
-                              ? TextDecoration.lineThrough 
-                              : null,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              )),
-              if (todos.length > 3)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    '还有 ${todos.length - 3} 项...',
-                    style: const TextStyle(
-                      color: AppColors.textHint,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
+              // 待办列表（可交互）
+              ...todos.map((todo) => _buildTodoItem(todo, dateStr)),
+              // 快速添加输入框
+              _buildQuickAddInput(dateStr),
             ],
           ),
         );
       },
+    );
+  }
+
+  /// 构建单个待办项（支持点击切换状态和左滑删除）
+  Widget _buildTodoItem(TodoItem todo, String dateStr) {
+    return Dismissible(
+      key: Key('todo_${todo.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 16),
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: AppColors.error,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          Icons.delete_rounded,
+          color: Colors.white,
+          size: 20,
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('删除待办'),
+            content: const Text('确定要删除这条待办事项吗？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('取消'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('删除', style: TextStyle(color: AppColors.error)),
+              ),
+            ],
+          ),
+        ) ?? false;
+      },
+      onDismissed: (direction) {
+        ref.read(todoListProvider(dateStr).notifier).deleteTodo(todo.id!);
+      },
+      child: GestureDetector(
+        onTap: () {
+          ref.read(todoListProvider(dateStr).notifier).toggleComplete(todo.id!);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          margin: const EdgeInsets.only(bottom: 4),
+          child: Row(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  todo.isCompleted 
+                      ? Icons.check_circle_rounded 
+                      : Icons.radio_button_unchecked,
+                  size: 18,
+                  color: todo.isCompleted 
+                      ? AppColors.success 
+                      : AppColors.textHint,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  todo.content,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: todo.isCompleted 
+                        ? AppColors.textHint 
+                        : AppColors.textPrimary,
+                    decoration: todo.isCompleted 
+                        ? TextDecoration.lineThrough 
+                        : null,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 快速添加待办输入框
+  Widget _buildQuickAddInput(String dateStr) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: '添加待办...',
+          hintStyle: TextStyle(
+            color: AppColors.textHint,
+            fontSize: 13,
+          ),
+          prefixIcon: const Icon(
+            Icons.add_rounded,
+            color: AppColors.textHint,
+            size: 20,
+          ),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 32,
+            minHeight: 32,
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          filled: true,
+          fillColor: AppColors.backgroundPink,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1),
+          ),
+        ),
+        style: const TextStyle(fontSize: 13),
+        textInputAction: TextInputAction.done,
+        onSubmitted: (value) {
+          if (value.trim().isNotEmpty) {
+            ref.read(todoListProvider(dateStr).notifier).addTodo(value);
+          }
+        },
+      ),
     );
   }
 
