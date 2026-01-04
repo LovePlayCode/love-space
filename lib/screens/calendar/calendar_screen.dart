@@ -30,7 +30,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       dateLogProvider(DailyLog.formatDateStr(selectedDate)),
     );
     final dateMediaAsync = ref.watch(dateMediaProvider(selectedDate));
-    final todosAsync = ref.watch(todoListProvider(DailyLog.formatDateStr(selectedDate)));
+    final todosAsync = ref.watch(
+      todoListProvider(DailyLog.formatDateStr(selectedDate)),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -55,7 +57,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           const Divider(height: 1),
           // 选中日期的内容
           Expanded(
-            child: _buildDayContent(selectedDate, dateLog, dateMediaAsync, todosAsync),
+            child: _buildDayContent(
+              selectedDate,
+              dateLog,
+              dateMediaAsync,
+              todosAsync,
+            ),
           ),
         ],
       ),
@@ -289,14 +296,17 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
   }
 
-  Widget _buildTodoPreview(AsyncValue<List<TodoItem>> todosAsync, String dateStr) {
+  Widget _buildTodoPreview(
+    AsyncValue<List<TodoItem>> todosAsync,
+    String dateStr,
+  ) {
     return todosAsync.when(
       loading: () => const SizedBox(),
       error: (_, _) => const SizedBox(),
       data: (todos) {
         final completedCount = todos.where((t) => t.isCompleted).length;
         final totalCount = todos.length;
-        
+
         return Container(
           width: double.infinity,
           margin: const EdgeInsets.only(bottom: 12),
@@ -321,7 +331,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       ),
                       SizedBox(width: 8),
                       Text(
-                        '待办事项',
+                        '今日恋爱计划',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12,
@@ -332,9 +342,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   ),
                   if (totalCount > 0)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: completedCount == totalCount 
+                        color: completedCount == totalCount
                             ? AppColors.success.withValues(alpha: 0.1)
                             : AppColors.primaryLighter,
                         borderRadius: BorderRadius.circular(10),
@@ -342,8 +355,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       child: Text(
                         '$completedCount/$totalCount',
                         style: TextStyle(
-                          color: completedCount == totalCount 
-                              ? AppColors.success 
+                          color: completedCount == totalCount
+                              ? AppColors.success
                               : AppColors.primary,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -377,30 +390,30 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           color: AppColors.error,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Icon(
-          Icons.delete_rounded,
-          color: Colors.white,
-          size: 20,
-        ),
+        child: const Icon(Icons.delete_rounded, color: Colors.white, size: 20),
       ),
       confirmDismiss: (direction) async {
         return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('删除待办'),
-            content: const Text('确定要删除这条待办事项吗？'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('取消'),
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('删除待办'),
+                content: const Text('确定要删除这条待办事项吗？'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('取消'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text(
+                      '删除',
+                      style: TextStyle(color: AppColors.error),
+                    ),
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('删除', style: TextStyle(color: AppColors.error)),
-              ),
-            ],
-          ),
-        ) ?? false;
+            ) ??
+            false;
       },
       onDismissed: (direction) {
         ref.read(todoListProvider(dateStr).notifier).deleteTodo(todo.id!);
@@ -417,12 +430,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 child: Icon(
-                  todo.isCompleted 
-                      ? Icons.check_circle_rounded 
+                  todo.isCompleted
+                      ? Icons.check_circle_rounded
                       : Icons.radio_button_unchecked,
                   size: 18,
-                  color: todo.isCompleted 
-                      ? AppColors.success 
+                  color: todo.isCompleted
+                      ? AppColors.success
                       : AppColors.textHint,
                 ),
               ),
@@ -432,11 +445,11 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   todo.content,
                   style: TextStyle(
                     fontSize: 14,
-                    color: todo.isCompleted 
-                        ? AppColors.textHint 
+                    color: todo.isCompleted
+                        ? AppColors.textHint
                         : AppColors.textPrimary,
-                    decoration: todo.isCompleted 
-                        ? TextDecoration.lineThrough 
+                    decoration: todo.isCompleted
+                        ? TextDecoration.lineThrough
                         : null,
                   ),
                   maxLines: 2,
@@ -458,10 +471,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       child: TextField(
         decoration: InputDecoration(
           hintText: '添加待办...',
-          hintStyle: const TextStyle(
-            color: AppColors.textHint,
-            fontSize: 13,
-          ),
+          hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 13),
           prefixIcon: const Icon(
             Icons.add_rounded,
             color: AppColors.textHint,
@@ -472,7 +482,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             minHeight: 36,
           ),
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
           filled: true,
           fillColor: AppColors.backgroundPink,
           border: OutlineInputBorder(
@@ -507,7 +520,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       orElse: () => false,
     );
     if (hasTodos) return const SizedBox();
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),

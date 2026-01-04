@@ -127,10 +127,7 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
                     : null,
               ),
               child: Center(
-                child: Text(
-                  entry.value,
-                  style: const TextStyle(fontSize: 28),
-                ),
+                child: Text(entry.value, style: const TextStyle(fontSize: 28)),
               ),
             ),
           ),
@@ -141,17 +138,19 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
     return Column(
       children: [
         Row(
-          children: firstRow
-              .expand((e) => [buildEmojiItem(e), const SizedBox(width: 12)])
-              .toList()
-            ..removeLast(),
+          children:
+              firstRow
+                  .expand((e) => [buildEmojiItem(e), const SizedBox(width: 12)])
+                  .toList()
+                ..removeLast(),
         ),
         const SizedBox(height: 12),
         Row(
-          children: secondRow
-              .expand((e) => [buildEmojiItem(e), const SizedBox(width: 12)])
-              .toList()
-            ..removeLast(),
+          children:
+              secondRow
+                  .expand((e) => [buildEmojiItem(e), const SizedBox(width: 12)])
+                  .toList()
+                ..removeLast(),
         ),
       ],
     );
@@ -182,7 +181,6 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
               hintText: '记录今天发生了什么...',
               hintStyle: TextStyle(color: AppColors.textHint),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
             ),
             style: AppTextStyles.body1,
           ),

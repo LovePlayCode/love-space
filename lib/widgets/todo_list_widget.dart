@@ -84,7 +84,7 @@ class _TodoListWidgetState extends ConsumerState<TodoListWidget> {
                       size: 20,
                     ),
                     SizedBox(width: 8),
-                    Text('待办事项', style: AppTextStyles.subtitle2),
+                    Text('今日恋爱计划', style: AppTextStyles.subtitle2),
                   ],
                 ),
                 if (!_isAdding)
