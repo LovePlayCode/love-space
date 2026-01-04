@@ -1,9 +1,10 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import 'package:photo_manager/photo_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/daily_log.dart';
@@ -288,7 +289,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 }
                 return const SizedBox();
               }
-              return _buildMediaGrid(mediaItems);
+              return _buildMediaGrid(mediaItems.cast<AssetEntity>());
             },
           ),
         ],
@@ -559,7 +560,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
   }
 
-  Widget _buildMediaGrid(List mediaItems) {
+  Widget _buildMediaGrid(List<AssetEntity> mediaItems) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -592,18 +593,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           ),
           itemCount: mediaItems.length,
           itemBuilder: (context, index) {
-            final item = mediaItems[index];
-            return GestureDetector(
-              onTap: () => context.push('/album/photo/${item.id}'),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  image: DecorationImage(
-                    image: FileImage(File(item.localPath)),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
+            final asset = mediaItems[index];
+            return _AssetThumbnail(
+              asset: asset,
+              onTap: () => context.push('/album/photo/${asset.id}'),
             );
           },
         ),
@@ -614,5 +607,65 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   void _navigateToDayDetail(DateTime date) {
     final dateStr = DailyLog.formatDateStr(date);
     context.push('/calendar/day/$dateStr');
+  }
+}
+
+/// 资源缩略图组件
+class _AssetThumbnail extends StatefulWidget {
+  final AssetEntity asset;
+  final VoidCallback onTap;
+
+  const _AssetThumbnail({
+    required this.asset,
+    required this.onTap,
+  });
+
+  @override
+  State<_AssetThumbnail> createState() => _AssetThumbnailState();
+}
+
+class _AssetThumbnailState extends State<_AssetThumbnail> {
+  Uint8List? _thumbnailData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThumbnail();
+  }
+
+  Future<void> _loadThumbnail() async {
+    final data = await widget.asset.thumbnailDataWithSize(
+      const ThumbnailSize(200, 200),
+      quality: 80,
+    );
+    if (mounted) {
+      setState(() => _thumbnailData = data);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.backgroundPink,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: _thumbnailData != null
+            ? Image.memory(
+                _thumbnailData!,
+                fit: BoxFit.cover,
+              )
+            : const Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+      ),
+    );
   }
 }

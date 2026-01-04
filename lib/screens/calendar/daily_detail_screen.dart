@@ -1,8 +1,9 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:photo_manager/photo_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/constants/app_constants.dart';
@@ -189,7 +190,7 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
     );
   }
 
-  Widget _buildPhotosSection(AsyncValue<List> mediaAsync) {
+  Widget _buildPhotosSection(AsyncValue<List<AssetEntity>> mediaAsync) {
     return mediaAsync.when(
       loading: () => const SizedBox(),
       error: (_, _) => const SizedBox(),
@@ -203,25 +204,15 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              const Row(
                 children: [
-                  const Row(
-                    children: [
-                      Icon(
-                        Icons.photo_library_rounded,
-                        color: AppColors.primary,
-                        size: 20,
-                      ),
-                      SizedBox(width: 8),
-                      Text('今日照片', style: AppTextStyles.subtitle2),
-                    ],
+                  Icon(
+                    Icons.photo_library_rounded,
+                    color: AppColors.primary,
+                    size: 20,
                   ),
-                  TextButton.icon(
-                    onPressed: _addPhoto,
-                    icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('添加'),
-                  ),
+                  SizedBox(width: 8),
+                  Text('今日照片', style: AppTextStyles.subtitle2),
                 ],
               ),
               const SizedBox(height: 12),
@@ -236,13 +227,13 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
                   child: const Column(
                     children: [
                       Icon(
-                        Icons.add_photo_alternate_rounded,
+                        Icons.photo_library_outlined,
                         color: AppColors.textHint,
                         size: 32,
                       ),
                       SizedBox(height: 8),
                       Text(
-                        '点击上方添加照片',
+                        '这一天还没有照片',
                         style: TextStyle(
                           color: AppColors.textHint,
                           fontSize: 12,
@@ -262,18 +253,10 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
                   ),
                   itemCount: mediaItems.length,
                   itemBuilder: (context, index) {
-                    final item = mediaItems[index];
-                    return GestureDetector(
-                      onTap: () => context.push('/album/photo/${item.id}'),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                            image: FileImage(File(item.localPath)),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
+                    final asset = mediaItems[index];
+                    return _AssetThumbnail(
+                      asset: asset,
+                      onTap: () => context.push('/album/photo/${asset.id}'),
                     );
                   },
                 ),
@@ -282,11 +265,6 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
         );
       },
     );
-  }
-
-  Future<void> _addPhoto() async {
-    // 打开媒体选择器
-    context.push('/album/picker');
   }
 
   Future<void> _saveLog() async {
@@ -308,5 +286,65 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
       ToastUtils.showSuccess(context, '保存成功');
       context.pop();
     }
+  }
+}
+
+/// 资源缩略图组件
+class _AssetThumbnail extends StatefulWidget {
+  final AssetEntity asset;
+  final VoidCallback onTap;
+
+  const _AssetThumbnail({
+    required this.asset,
+    required this.onTap,
+  });
+
+  @override
+  State<_AssetThumbnail> createState() => _AssetThumbnailState();
+}
+
+class _AssetThumbnailState extends State<_AssetThumbnail> {
+  Uint8List? _thumbnailData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThumbnail();
+  }
+
+  Future<void> _loadThumbnail() async {
+    final data = await widget.asset.thumbnailDataWithSize(
+      const ThumbnailSize(200, 200),
+      quality: 80,
+    );
+    if (mounted) {
+      setState(() => _thumbnailData = data);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.backgroundPink,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: _thumbnailData != null
+            ? Image.memory(
+                _thumbnailData!,
+                fit: BoxFit.cover,
+              )
+            : const Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+      ),
+    );
   }
 }

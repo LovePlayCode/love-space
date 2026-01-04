@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:photo_manager/photo_manager.dart';
 import '../models/daily_log.dart';
-import '../models/media_item.dart';
 import '../services/database_service.dart';
-import '../services/media_service.dart';
+import '../services/system_album_service.dart';
 
 /// 日历选中日期状态
 class SelectedDateNotifier extends StateNotifier<DateTime> {
@@ -113,25 +113,54 @@ final dateLogProvider = Provider.family<DailyLog?, String>((ref, dateStr) {
   );
 });
 
-/// 指定日期的媒体 Provider
-final dateMediaProvider = FutureProvider.family<List<MediaItem>, DateTime>((ref, date) async {
-  final mediaService = MediaService();
-  return await mediaService.getMediaItemsByDate(date);
+/// 指定日期的媒体 Provider（从系统相册读取）
+final dateMediaProvider = FutureProvider.family<List<AssetEntity>, DateTime>((ref, date) async {
+  final service = SystemAlbumService();
+  final hasPermission = await service.requestPermission();
+  if (!hasPermission) return [];
+
+  try {
+    // 获取指定日期的开始和结束时间
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+
+    // 使用 photo_manager 的过滤选项获取指定日期的照片
+    final albums = await PhotoManager.getAssetPathList(
+      type: RequestType.common,
+      filterOption: FilterOptionGroup(
+        createTimeCond: DateTimeCond(
+          min: startOfDay,
+          max: endOfDay,
+        ),
+        orders: [
+          const OrderOption(type: OrderOptionType.createDate, asc: false),
+        ],
+      ),
+    );
+
+    if (albums.isEmpty) return [];
+
+    // 获取该日期的所有资源
+    final recentAlbum = albums.first;
+    final count = await recentAlbum.assetCountAsync;
+    if (count == 0) return [];
+
+    return await recentAlbum.getAssetListPaged(page: 0, size: count);
+  } catch (e) {
+    return [];
+  }
 });
 
-/// 日历标记数据 Provider（合并日记、媒体和待办日期）
+/// 日历标记数据 Provider（合并日记和待办日期）
 final calendarMarkersProvider = FutureProvider<Set<String>>((ref) async {
   final dbService = DatabaseService();
   
   // 获取有日记的日期
   final logDates = await dbService.getDailyLogDates();
   
-  // 获取有媒体的日期
-  final mediaDates = await dbService.getMediaDates();
-  
   // 获取有待办的日期
   final todoDates = await dbService.getTodoDates();
   
-  // 合并
-  return {...logDates, ...mediaDates, ...todoDates};
+  // 合并（移除媒体日期，因为现在直接从系统相册读取）
+  return {...logDates, ...todoDates};
 });

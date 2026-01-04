@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../screens/home/home_screen.dart';
-import '../../screens/album/album_screen.dart';
-import '../../screens/album/photo_detail_screen.dart';
-import '../../screens/album/media_picker_screen.dart';
+import '../../screens/album/system_album_screen.dart';
+import '../../screens/album/system_photo_detail_screen.dart';
 import '../../screens/calendar/calendar_screen.dart';
 import '../../screens/calendar/daily_detail_screen.dart';
 import '../../screens/anniversary/anniversary_screen.dart';
@@ -19,7 +18,6 @@ class AppRoutes {
   static const String home = '/';
   static const String album = '/album';
   static const String photoDetail = '/album/photo/:id';
-  static const String mediaPicker = '/album/picker';
   static const String calendar = '/calendar';
   static const String dailyDetail = '/calendar/day/:date';
   static const String anniversary = '/anniversary';
@@ -54,7 +52,7 @@ class AppRouter {
           GoRoute(
             path: AppRoutes.album,
             pageBuilder: (context, state) => const NoTransitionPage(
-              child: AlbumScreen(),
+              child: SystemAlbumScreen(),
             ),
           ),
           GoRoute(
@@ -76,13 +74,11 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.photoDetail,
         builder: (context, state) {
-          final id = state.pathParameters['id'] ?? '';
-          return PhotoDetailScreen(photoId: id);
+          // ID 可能被 URL 编码，需要解码
+          final encodedId = state.pathParameters['id'] ?? '';
+          final id = Uri.decodeComponent(encodedId);
+          return SystemPhotoDetailScreen(assetId: id);
         },
-      ),
-      GoRoute(
-        path: AppRoutes.mediaPicker,
-        builder: (context, state) => const MediaPickerScreen(),
       ),
       GoRoute(
         path: AppRoutes.dailyDetail,
