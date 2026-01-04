@@ -454,23 +454,25 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   Widget _buildQuickAddInput(String dateStr) {
     return Container(
       margin: const EdgeInsets.only(top: 8),
+      height: 40,
       child: TextField(
         decoration: InputDecoration(
           hintText: '添加待办...',
-          hintStyle: TextStyle(
+          hintStyle: const TextStyle(
             color: AppColors.textHint,
             fontSize: 13,
           ),
           prefixIcon: const Icon(
             Icons.add_rounded,
             color: AppColors.textHint,
-            size: 20,
+            size: 18,
           ),
           prefixIconConstraints: const BoxConstraints(
-            minWidth: 32,
-            minHeight: 32,
+            minWidth: 36,
+            minHeight: 36,
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           filled: true,
           fillColor: AppColors.backgroundPink,
           border: OutlineInputBorder(
@@ -487,6 +489,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           ),
         ),
         style: const TextStyle(fontSize: 13),
+        cursorHeight: 16,
         textInputAction: TextInputAction.done,
         onSubmitted: (value) {
           if (value.trim().isNotEmpty) {

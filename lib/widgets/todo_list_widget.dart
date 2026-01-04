@@ -78,7 +78,11 @@ class _TodoListWidgetState extends ConsumerState<TodoListWidget> {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.checklist_rounded, color: AppColors.primary, size: 20),
+                    Icon(
+                      Icons.checklist_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                     SizedBox(width: 8),
                     Text('待办事项', style: AppTextStyles.subtitle2),
                   ],
@@ -87,7 +91,10 @@ class _TodoListWidgetState extends ConsumerState<TodoListWidget> {
                   GestureDetector(
                     onTap: _startAdding,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primaryLighter,
                         borderRadius: BorderRadius.circular(12),
@@ -95,7 +102,11 @@ class _TodoListWidgetState extends ConsumerState<TodoListWidget> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.add_rounded, size: 16, color: AppColors.primary),
+                          Icon(
+                            Icons.add_rounded,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
                           SizedBox(width: 2),
                           Text(
                             '添加',
@@ -121,7 +132,10 @@ class _TodoListWidgetState extends ConsumerState<TodoListWidget> {
               ),
             ),
             error: (e, _) => Center(
-              child: Text('加载失败: $e', style: const TextStyle(color: AppColors.textHint)),
+              child: Text(
+                '加载失败: $e',
+                style: const TextStyle(color: AppColors.textHint),
+              ),
             ),
             data: (todos) => _buildTodoList(todos),
           ),
@@ -140,7 +154,11 @@ class _TodoListWidgetState extends ConsumerState<TodoListWidget> {
           child: const Center(
             child: Column(
               children: [
-                Icon(Icons.add_task_rounded, size: 32, color: AppColors.textHint),
+                Icon(
+                  Icons.add_task_rounded,
+                  size: 32,
+                  color: AppColors.textHint,
+                ),
                 SizedBox(height: 8),
                 Text(
                   '点击添加待办事项',
@@ -154,18 +172,24 @@ class _TodoListWidgetState extends ConsumerState<TodoListWidget> {
     }
 
     return Column(
-      children: todos.map((todo) => _TodoItemWidget(
-        todo: todo,
-        onToggle: () => ref.read(todoListProvider(widget.dateStr).notifier).toggleComplete(todo.id!),
-        onDelete: () => _showDeleteConfirm(todo),
-      )).toList(),
+      children: todos
+          .map(
+            (todo) => _TodoItemWidget(
+              todo: todo,
+              onToggle: () => ref
+                  .read(todoListProvider(widget.dateStr).notifier)
+                  .toggleComplete(todo.id!),
+              onDelete: () => _showDeleteConfirm(todo),
+            ),
+          )
+          .toList(),
     );
   }
 
   Widget _buildAddInput() {
     return Container(
       margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.backgroundPink,
         borderRadius: BorderRadius.circular(12),
@@ -173,7 +197,11 @@ class _TodoListWidgetState extends ConsumerState<TodoListWidget> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.radio_button_unchecked, size: 20, color: AppColors.textHint),
+          const Icon(
+            Icons.radio_button_unchecked,
+            size: 18,
+            color: AppColors.textHint,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: TextField(
@@ -184,9 +212,10 @@ class _TodoListWidgetState extends ConsumerState<TodoListWidget> {
                 hintStyle: TextStyle(color: AppColors.textHint, fontSize: 14),
                 border: InputBorder.none,
                 isDense: true,
-                contentPadding: EdgeInsets.zero,
+                contentPadding: EdgeInsets.symmetric(vertical: 8),
               ),
-              style: const TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 14, height: 1.2),
+              cursorHeight: 16,
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _submitTodo(),
             ),
@@ -200,13 +229,21 @@ class _TodoListWidgetState extends ConsumerState<TodoListWidget> {
                 color: AppColors.primary,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.check_rounded, size: 16, color: Colors.white),
+              child: const Icon(
+                Icons.check_rounded,
+                size: 16,
+                color: Colors.white,
+              ),
             ),
           ),
           const SizedBox(width: 8),
           GestureDetector(
             onTap: _cancelAdding,
-            child: const Icon(Icons.close_rounded, size: 20, color: AppColors.textHint),
+            child: const Icon(
+              Icons.close_rounded,
+              size: 20,
+              color: AppColors.textHint,
+            ),
           ),
         ],
       ),
@@ -227,7 +264,9 @@ class _TodoListWidgetState extends ConsumerState<TodoListWidget> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              ref.read(todoListProvider(widget.dateStr).notifier).deleteTodo(todo.id!);
+              ref
+                  .read(todoListProvider(widget.dateStr).notifier)
+                  .deleteTodo(todo.id!);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('删除'),
@@ -284,15 +323,23 @@ class _TodoItemWidget extends StatelessWidget {
                 width: 22,
                 height: 22,
                 decoration: BoxDecoration(
-                  color: todo.isCompleted ? AppColors.primary : Colors.transparent,
+                  color: todo.isCompleted
+                      ? AppColors.primary
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: todo.isCompleted ? AppColors.primary : AppColors.textHint,
+                    color: todo.isCompleted
+                        ? AppColors.primary
+                        : AppColors.textHint,
                     width: 2,
                   ),
                 ),
                 child: todo.isCompleted
-                    ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
+                    ? const Icon(
+                        Icons.check_rounded,
+                        size: 14,
+                        color: Colors.white,
+                      )
                     : null,
               ),
               const SizedBox(width: 12),
@@ -301,8 +348,12 @@ class _TodoItemWidget extends StatelessWidget {
                   todo.content,
                   style: TextStyle(
                     fontSize: 14,
-                    color: todo.isCompleted ? AppColors.textHint : AppColors.textPrimary,
-                    decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
+                    color: todo.isCompleted
+                        ? AppColors.textHint
+                        : AppColors.textPrimary,
+                    decoration: todo.isCompleted
+                        ? TextDecoration.lineThrough
+                        : null,
                     decorationColor: AppColors.textHint,
                   ),
                 ),
