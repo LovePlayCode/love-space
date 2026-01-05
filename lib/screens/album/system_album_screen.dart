@@ -66,7 +66,9 @@ class _SystemAlbumScreenState extends ConsumerState<SystemAlbumScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              isPermissionError ? Icons.photo_library_outlined : Icons.error_outline_rounded,
+              isPermissionError
+                  ? Icons.photo_library_outlined
+                  : Icons.error_outline_rounded,
               size: 64,
               color: AppColors.textHint,
             ),
@@ -78,7 +80,9 @@ class _SystemAlbumScreenState extends ConsumerState<SystemAlbumScreen> {
             const SizedBox(height: 8),
             Text(
               isPermissionError ? '请在设置中允许访问相册' : '请稍后重试',
-              style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.body2.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -111,14 +115,13 @@ class _SystemAlbumScreenState extends ConsumerState<SystemAlbumScreen> {
               color: AppColors.textHint,
             ),
             const SizedBox(height: 16),
-            Text(
-              '相册是空的',
-              style: AppTextStyles.subtitle1,
-            ),
+            Text('相册是空的', style: AppTextStyles.subtitle1),
             const SizedBox(height: 8),
             Text(
               '去拍摄一些美好的瞬间吧',
-              style: AppTextStyles.body2.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.body2.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -133,7 +136,7 @@ class _SystemAlbumScreenState extends ConsumerState<SystemAlbumScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: MasonryGridView.count(
           controller: _scrollController,
-          crossAxisCount: 3,
+          crossAxisCount: 2,
           mainAxisSpacing: 4,
           crossAxisSpacing: 4,
           itemCount: photos.length,
@@ -160,10 +163,7 @@ class _PhotoTile extends StatefulWidget {
   final AssetEntity asset;
   final VoidCallback onTap;
 
-  const _PhotoTile({
-    required this.asset,
-    required this.onTap,
-  });
+  const _PhotoTile({required this.asset, required this.onTap});
 
   @override
   State<_PhotoTile> createState() => _PhotoTileState();
@@ -229,13 +229,13 @@ class _PhotoTileState extends State<_PhotoTile> {
                   ),
                 )
               else if (_thumbnailData != null)
-                Image.memory(
-                  _thumbnailData!,
-                  fit: BoxFit.cover,
-                )
+                Image.memory(_thumbnailData!, fit: BoxFit.cover)
               else
                 const Center(
-                  child: Icon(Icons.broken_image_rounded, color: AppColors.textHint),
+                  child: Icon(
+                    Icons.broken_image_rounded,
+                    color: AppColors.textHint,
+                  ),
                 ),
               // 视频标识
               if (widget.asset.type == AssetType.video)
@@ -243,7 +243,10 @@ class _PhotoTileState extends State<_PhotoTile> {
                   bottom: 4,
                   right: 4,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black54,
                       borderRadius: BorderRadius.circular(4),
@@ -259,7 +262,10 @@ class _PhotoTileState extends State<_PhotoTile> {
                         const SizedBox(width: 2),
                         Text(
                           _formatDuration(widget.asset.videoDuration),
-                          style: const TextStyle(color: Colors.white, fontSize: 10),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
                         ),
                       ],
                     ),
