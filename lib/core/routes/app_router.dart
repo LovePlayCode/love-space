@@ -38,7 +38,7 @@ class AppRouter {
     navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoutes.home,
     routes: [
-      // 底部导航栏 Shell
+      // 底部导航栏 Shell - 4个tab: 首页、日历、纪念日、设置
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) => MainScaffold(child: child),
@@ -47,12 +47,6 @@ class AppRouter {
             path: AppRoutes.home,
             pageBuilder: (context, state) => const NoTransitionPage(
               child: HomeScreen(),
-            ),
-          ),
-          GoRoute(
-            path: AppRoutes.album,
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: SystemAlbumScreen(),
             ),
           ),
           GoRoute(
@@ -67,10 +61,20 @@ class AppRouter {
               child: AnniversaryScreen(),
             ),
           ),
+          GoRoute(
+            path: AppRoutes.settings,
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: SettingsScreen(),
+            ),
+          ),
         ],
       ),
 
       // 独立页面（不带底部导航栏）
+      GoRoute(
+        path: AppRoutes.album,
+        builder: (context, state) => const SystemAlbumScreen(),
+      ),
       GoRoute(
         path: AppRoutes.photoDetail,
         builder: (context, state) {
@@ -97,10 +101,6 @@ class AppRouter {
           final id = state.uri.queryParameters['id'];
           return AnniversaryEditScreen(anniversaryId: id);
         },
-      ),
-      GoRoute(
-        path: AppRoutes.settings,
-        builder: (context, state) => const SettingsScreen(),
       ),
       GoRoute(
         path: AppRoutes.profileEdit,

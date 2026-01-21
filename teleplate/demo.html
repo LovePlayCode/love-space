@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>LoveSpace 首页 - 时光相册 (可爱版)</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&amp;family=Varela+Round&amp;family=ZCOOL+KuaiLe&amp;family=Ma+Shan+Zheng&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FF9EAA", // Soft Pink
+              "primary-dark": "#FF758F", // Darker Pink
+              secondary: "#FFE5B4", // Peach/Cream
+              accent: "#FFD93D", // Pop Yellow
+              "background-light": "#FFFBF0", // Warm Cream Background
+              "background-dark": "#2D2424",
+              "surface-light": "#FFFFFF",
+              "surface-dark": "#3D3232",
+              "text-main": "#5D4037", // Brownish text (softer than black)
+              "text-sub": "#9E837D",
+              "border-cute": "#F8C8DC",
+            },
+            fontFamily: {
+              display: ["ZCOOL KuaiLe", "Fredoka", "cursive"], // Cute display font
+              body: [
+                "Varela Round",
+                "PingFang SC",
+                "Microsoft YaHei",
+                "sans-serif",
+              ], // Rounded body font
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+              lg: "1rem",
+              xl: "1.5rem",
+              "2xl": "2rem",
+              "3xl": "3rem",
+              full: "9999px",
+            },
+            boxShadow: {
+              cute: "0 6px 0px 0px rgba(255, 158, 170, 0.3)", // Chunky shadow
+              "cute-hover": "0 8px 0px 0px rgba(255, 158, 170, 0.5)",
+              card: "0 4px 15px -3px rgba(255, 158, 170, 0.15)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .bg-doodle {
+        background-color: #fffbf0;
+        background-image: radial-gradient(#ff9eaa 1px, transparent 1px),
+          radial-gradient(#ff9eaa 1px, transparent 1px);
+        background-size: 40px 40px;
+        background-position: 0 0, 20px 20px;
+        opacity: 1;
+      }
+      .text-outline {
+        text-shadow: 2px 2px 0px rgba(255, 117, 143, 0.4);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-doodle dark:bg-background-dark font-body text-text-main dark:text-gray-100 antialiased selection:bg-primary selection:text-white"
+  >
+    <div
+      class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-28"
+    >
+      <div
+        class="relative w-full h-[340px] shrink-0 rounded-b-[40px] overflow-hidden shadow-card z-10 bg-white"
+      >
+        <div
+          class="absolute inset-0 bg-cover bg-center"
+          data-alt="Blurred romantic couple photo background"
+          style="
+            background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAtGEQvSg9JAiiB2fb89RZEyA5ZwxRh1IG27qOuqtcPi9oHAzl79vatPWUGX2uuUTEq2vHX0LbOKF9nchhPq6wD5YTQDsDcRejJ5JXymd5HWtzs1qLA4IqDXdAs0uxIgP80qjqK_aVQEzWyYHoQX8lBAp-Vm3H6Q8Vg08fevjNw-bc7xTdYhMsKdrnLA8-Wo7lrbiDhJBYmlySZ3HpgKsSc0_mUPojsyLGABwNK6ghbN8pj3MqTFiRV5s13BCAHqK-iNW7GegMxZbX0');
+            filter: blur(3px) brightness(1.1);
+          "
+        ></div>
+        <div
+          class="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary-dark/10 to-white/60 dark:to-background-dark/80 mix-blend-overlay"
+        ></div>
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"
+        ></div>
+        <div class="relative h-full flex flex-col justify-between p-6 z-10">
+          <div class="flex items-center justify-between pt-2">
+            <div
+              class="flex items-center gap-2 bg-white/30 backdrop-blur-md px-4 py-2 rounded-full border border-white/40 shadow-sm"
+            >
+              <span
+                class="material-symbols-outlined text-red-500 text-[24px] animate-pulse"
+                >favorite</span
+              >
+              <h2
+                class="text-white text-xl font-display tracking-wider drop-shadow-md"
+              >
+                恋爱空间
+              </h2>
+            </div>
+            <button
+              class="flex items-center justify-center w-10 h-10 rounded-full bg-white/30 backdrop-blur-md hover:bg-white/50 transition-colors text-white border border-white/40 shadow-sm"
+            >
+              <span class="material-symbols-outlined" style="font-size: 20px"
+                >settings</span
+              >
+            </button>
+          </div>
+          <div
+            class="flex flex-col items-center justify-center mb-6 text-center"
+          >
+            <div
+              class="bg-white/20 backdrop-blur-md px-4 py-1 rounded-full border border-white/20 mb-3"
+            >
+              <p
+                class="text-white text-sm font-bold tracking-wide drop-shadow-sm"
+              >
+                始于 2022年10月14日
+              </p>
+            </div>
+            <h1
+              class="text-white text-5xl font-display font-extrabold leading-tight drop-shadow-lg text-outline"
+            >
+              在一起 <br />
+              <span
+                class="inline-flex items-center justify-center mt-3 bg-white text-primary-dark px-6 py-2 rounded-3xl shadow-lg border-4 border-primary/20 font-display text-6xl transform -rotate-2"
+                >520</span
+              >
+              <span class="text-3xl ml-1 align-bottom">天</span>
+            </h1>
+          </div>
+        </div>
+        <div
+          class="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-background-light to-transparent opacity-50"
+        ></div>
+      </div>
+      <div class="sticky top-0 z-40 pt-4 pb-2 px-6 transition-all">
+        <div
+          class="flex h-14 w-full items-center justify-center rounded-full bg-white dark:bg-surface-dark p-1.5 shadow-cute border-2 border-primary/20"
+        >
+          <label
+            class="group flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 transition-all duration-300 has-[:checked]:bg-primary has-[:checked]:shadow-sm has-[:checked]:text-white text-text-sub dark:text-gray-400 font-display text-lg tracking-wide"
+          >
+            <span class="truncate">时光</span>
+            <input
+              checked=""
+              class="invisible w-0 h-0 absolute"
+              name="view-switch"
+              type="radio"
+              value="Memories"
+            />
+          </label>
+          <label
+            class="group flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 transition-all duration-300 has-[:checked]:bg-primary has-[:checked]:shadow-sm has-[:checked]:text-white text-text-sub dark:text-gray-400 font-display text-lg tracking-wide"
+          >
+            <span class="truncate">日历</span>
+            <input
+              class="invisible w-0 h-0 absolute"
+              name="view-switch"
+              type="radio"
+              value="Calendar"
+            />
+          </label>
+        </div>
+      </div>
+      <div class="px-4 py-4">
+        <div class="columns-2 gap-4 space-y-4">
+          <div class="break-inside-avoid mb-4 group cursor-pointer">
+            <div
+              class="relative flex flex-col gap-3 bg-surface-light dark:bg-surface-dark p-2.5 pb-4 rounded-3xl shadow-card border-2 border-white hover:border-primary/30 dark:border-white/5 hover:-translate-y-1 transition-all duration-300"
+            >
+              <div
+                class="w-full aspect-[3/4] bg-gray-100 rounded-2xl overflow-hidden relative"
+              >
+                <div
+                  class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                  data-alt="Couple walking on a beach during sunset"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCdepKJpVomcMFOQWhotuC1PanDF2-BmOQCG24xmKLXFEhqqP3KlQgYVob2pu03LS11us-w3qAyN5LnHkrXNRKBUTwM8O04D7GBZ-XvBj38mHSGepWxK0bEHHx3o10DdmKMsWov93iG3xj5yA9HturiukcIccCKH_tF-3B7MDblVQwRQqK00qfAWpm0WqwD6BFHlw9xQHLxds6MtpqbkR0RONBqWwgvqPcodi0aw1smoYr_4xMaiYWYHJEjVUPZAr2M6TIIAQAtmt2k');
+                  "
+                ></div>
+                <div
+                  class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm text-primary-dark text-[12px] px-3 py-1 rounded-full font-bold font-display shadow-sm"
+                >
+                  10月12日
+                </div>
+              </div>
+              <div class="px-2">
+                <p
+                  class="text-text-main dark:text-gray-200 text-[15px] font-bold leading-tight font-display"
+                >
+                  第一次巴厘岛之旅 🌴
+                </p>
+                <p
+                  class="text-text-sub dark:text-gray-400 text-xs mt-1.5 font-medium"
+                >
+                  绝美的日落。
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="break-inside-avoid mb-4 group cursor-pointer">
+            <div
+              class="relative flex flex-col gap-3 bg-surface-light dark:bg-surface-dark p-2.5 pb-4 rounded-3xl shadow-card border-2 border-white hover:border-primary/30 dark:border-white/5 hover:-translate-y-1 transition-all duration-300"
+            >
+              <div
+                class="w-full aspect-square bg-gray-100 rounded-2xl overflow-hidden relative"
+              >
+                <div
+                  class="absolute inset-0 bg-cover bg-center"
+                  data-alt="Blurry photo of burnt pasta dish"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBORKwHVeFZM1f7WywlEEda0N50B-i67EKge-wz3CiVjyUvrh6L_KgPdSiW2ovG2sIrzrBhpcKgE8U4r1KgXGZhD5lsGIj5hFR4F2hdxfZBH1WBykOB-ZQX-6-WxO7m9OFYp62RupROnN-cGxIU_f22HpA5pZkEnOyL2ZDLJx8kP6cHlnhGPic4qJPrObx64iptC-TQhMpG9-uPFKRQvkBYDMvYLWOxu-THxSo2lVsSvnxD-LgqyyNIhbsbN_OiiNr_ZUbf86XxG17W');
+                  "
+                ></div>
+                <div
+                  class="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors"
+                >
+                  <div
+                    class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform"
+                  >
+                    <span
+                      class="material-symbols-outlined text-primary-dark"
+                      style="font-size: 28px"
+                      >play_arrow</span
+                    >
+                  </div>
+                </div>
+                <div
+                  class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm text-primary-dark text-[12px] px-3 py-1 rounded-full font-bold font-display shadow-sm"
+                >
+                  11月01日
+                </div>
+              </div>
+              <div class="px-2">
+                <p
+                  class="text-text-main dark:text-gray-200 text-[15px] font-bold leading-tight font-display"
+                >
+                  黑暗料理现场 哈哈
+                </p>
+                <p
+                  class="text-text-sub dark:text-gray-400 text-xs mt-1.5 font-medium"
+                >
+                  再也不做意面了。
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="break-inside-avoid mb-4 group cursor-pointer">
+            <div
+              class="relative flex flex-col gap-3 bg-surface-light dark:bg-surface-dark p-2.5 pb-4 rounded-3xl shadow-card border-2 border-white hover:border-primary/30 dark:border-white/5 hover:-translate-y-1 transition-all duration-300"
+            >
+              <div
+                class="w-full aspect-[4/3] bg-gray-100 rounded-2xl overflow-hidden relative"
+              >
+                <div
+                  class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                  data-alt="Two glasses of wine on a table"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC7mdIYS9yUZwwil_EtRzL8ycYWPH9gV8assrjod8zQxjHmtLYtth4jd7W2djbY72Zv9xHuwb9sCD3aMtxRBY54UOHqMijEPg18fHC2Jy9Pxz-929cNQ6xRYYQJkHzqq5APsmXNpCWaZwpHOVRm_OpQ0SRLzItcWzeZpEzmA4rRgPdHTgyR-AXrtP2HpN4xabO42CxlK1dysOMHNND0UtpE-eI29EK3uoPBkbOvVG7oNNauppSKZVAbMkn9aeLldwTPUEKNO_PQBJF_');
+                  "
+                ></div>
+                <div
+                  class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm text-primary-dark text-[12px] px-3 py-1 rounded-full font-bold font-display shadow-sm"
+                >
+                  12月14日
+                </div>
+              </div>
+              <div class="px-2">
+                <p
+                  class="text-text-main dark:text-gray-200 text-[15px] font-bold leading-tight font-display"
+                >
+                  浪漫约会 ❤️
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="break-inside-avoid mb-4 group cursor-pointer">
+            <div
+              class="relative flex flex-col gap-3 bg-surface-light dark:bg-surface-dark p-2.5 pb-4 rounded-3xl shadow-card border-2 border-white hover:border-primary/30 dark:border-white/5 hover:-translate-y-1 transition-all duration-300"
+            >
+              <div
+                class="w-full aspect-[3/5] bg-gray-100 rounded-2xl overflow-hidden relative"
+              >
+                <div
+                  class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                  data-alt="Woman laughing while hiking on a trail"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC9w11h49IswM8YD33wK6WiKEP0DMPrfK3h7lvmgra2KP2mv8BNSXRdK8K3RGxZJn_P_itLSgvZZeCxM1hM9oh9lKHoNFc4uE_VVKrxMzS4Vx40dJ8pcWHClYNS08yikc7hvRHMOkwAEHaWFdyr8107Tb3VdpgEjxYR14Ds7lpkKylUj7wi_ZMH7Bxjgy1wXTgpdpjPaIfpTNkbp4D9rvVotMjerQGQ3KEJfl9fv53hIdpFvw28huNgRoeqmzH93SFsnmvYFAH0rwPK');
+                  "
+                ></div>
+                <div
+                  class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm text-primary-dark text-[12px] px-3 py-1 rounded-full font-bold font-display shadow-sm"
+                >
+                  8月22日
+                </div>
+              </div>
+              <div class="px-2">
+                <p
+                  class="text-text-main dark:text-gray-200 text-[15px] font-bold leading-tight font-display"
+                >
+                  徒步探险 ⛰️
+                </p>
+                <p
+                  class="text-text-sub dark:text-gray-400 text-xs mt-1.5 font-medium"
+                >
+                  我们登顶啦！
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="break-inside-avoid mb-4 group cursor-pointer">
+            <div
+              class="relative flex flex-col gap-3 bg-surface-light dark:bg-surface-dark p-2.5 pb-4 rounded-3xl shadow-card border-2 border-white hover:border-primary/30 dark:border-white/5 hover:-translate-y-1 transition-all duration-300"
+            >
+              <div
+                class="w-full aspect-square bg-gray-100 rounded-2xl overflow-hidden relative"
+              >
+                <div
+                  class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                  data-alt="Cozy sunday morning with coffee and books"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA8nmc6CgHSn-Sb4vgcUagEV4C4RN4XJVLdB51T7MwAxWI0pzS_4Q6f5YEkkqRLTsJX2P0abe3jzrWWNnh09xJmvsXRgDohMPEXxRqxjbLopuVMkhY5VyXRqzXa93n1ywNRdsf3Spfhr3K5bcW-BUgpjrvr0QVM_l5Vg_MZhNQm6Nw9AthZpsMttFVXXJnCuCqcnEZZXF-dckllEH3YPg4c69NYziIM2NUpdF506IIgXXOeM7oCVkCP1TSzrMUvU73mqYYMks_OaEf8');
+                  "
+                ></div>
+                <div
+                  class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm text-primary-dark text-[12px] px-3 py-1 rounded-full font-bold font-display shadow-sm"
+                >
+                  7月04日
+                </div>
+              </div>
+              <div class="px-2">
+                <p
+                  class="text-text-main dark:text-gray-200 text-[15px] font-bold leading-tight font-display"
+                >
+                  慵懒周日
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="break-inside-avoid mb-4 group cursor-pointer">
+            <div
+              class="relative flex flex-col gap-3 bg-surface-light dark:bg-surface-dark p-2.5 pb-4 rounded-3xl shadow-card border-2 border-white hover:border-primary/30 dark:border-white/5 hover:-translate-y-1 transition-all duration-300"
+            >
+              <div
+                class="w-full aspect-[2/3] bg-gray-100 rounded-2xl overflow-hidden relative"
+              >
+                <div
+                  class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                  data-alt="Close up of holding hands"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAOIHUP_BQQvsJKbbyyvaAtxcy3Byk6skuLk9iwElpBgei1vYhy0dimwjJb5CRZzCOhQc-HnlAfuV0Ck_ZMkuQBo-hCGnfrCgwVjj6W86I5ooCwOCa3zu6-Pv4Rb2ymjaF3v83Plfjuf8czK4wzgIERDVoErFAn59nyK6c1A-v-m02wX7HIKfALvBTdNK-dbB58l3xvdTqi4Z2h6IZUgXOTWUxHUrYIVUsBpuFsaa7g2FRi7jWFQkCesIKYvREvvttfDAKbu6RCBfKZ');
+                  "
+                ></div>
+                <div
+                  class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm text-primary-dark text-[12px] px-3 py-1 rounded-full font-bold font-display shadow-sm"
+                >
+                  5月20日
+                </div>
+              </div>
+              <div class="px-2">
+                <p
+                  class="text-text-main dark:text-gray-200 text-[15px] font-bold leading-tight font-display"
+                >
+                  520 惊喜 🎁
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="fixed bottom-24 right-5 z-50">
+        <button
+          class="group flex items-center justify-center w-16 h-16 rounded-3xl bg-primary text-white shadow-cute hover:shadow-cute-hover hover:scale-105 active:scale-95 transition-all duration-300 border-2 border-white"
+        >
+          <span
+            class="material-symbols-outlined transition-transform duration-300 group-hover:rotate-12"
+            style="font-size: 32px"
+            >pets</span
+          >
+        </button>
+      </div>
+      <div
+        class="fixed bottom-0 left-0 right-0 z-50 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-xl border-t-2 border-primary/20 h-[85px] pb-6 rounded-t-3xl shadow-[0_-5px_20px_-5px_rgba(255,158,170,0.15)]"
+      >
+        <div class="flex items-center justify-around h-full">
+          <button
+            class="flex flex-col items-center justify-center gap-1 w-14 text-primary scale-110"
+          >
+            <span
+              class="material-symbols-outlined fill-current drop-shadow-sm"
+              style="font-variation-settings: 'FILL' 1; font-size: 28px"
+              >cottage</span
+            >
+            <span class="text-[11px] font-bold font-display">首页</span>
+          </button>
+          <button
+            class="flex flex-col items-center justify-center gap-1 w-14 text-text-sub dark:text-gray-500 hover:text-primary dark:hover:text-primary-dark transition-colors"
+          >
+            <span class="material-symbols-outlined" style="font-size: 28px"
+              >calendar_month</span
+            >
+            <span class="text-[11px] font-medium font-display">日历</span>
+          </button>
+          <button
+            class="flex flex-col items-center justify-center gap-1 w-14 text-text-sub dark:text-gray-500 hover:text-primary dark:hover:text-primary-dark transition-colors"
+          >
+            <span class="material-symbols-outlined" style="font-size: 28px"
+              >favorite</span
+            >
+            <span class="text-[11px] font-medium font-display">纪念日</span>
+          </button>
+          <button
+            class="flex flex-col items-center justify-center gap-1 w-14 text-text-sub dark:text-gray-500 hover:text-primary dark:hover:text-primary-dark transition-colors"
+          >
+            <span class="material-symbols-outlined" style="font-size: 28px"
+              >settings</span
+            >
+            <span class="text-[11px] font-medium font-display">设置</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
