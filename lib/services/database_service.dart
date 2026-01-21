@@ -116,6 +116,18 @@ class DatabaseService {
       )
     ''');
     await db.execute('CREATE INDEX idx_todos_date_str ON todos(date_str)');
+
+    // 创建系统相册标签关联表（基于 asset_id）
+    await db.execute('''
+      CREATE TABLE system_asset_tags (
+        asset_id TEXT NOT NULL,
+        tag_id INTEGER NOT NULL,
+        PRIMARY KEY (asset_id, tag_id),
+        FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute('CREATE INDEX idx_system_asset_tags_asset_id ON system_asset_tags(asset_id)');
+    await db.execute('CREATE INDEX idx_system_asset_tags_tag_id ON system_asset_tags(tag_id)');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -167,6 +179,19 @@ class DatabaseService {
         )
       ''');
       await db.execute('CREATE INDEX IF NOT EXISTS idx_todos_date_str ON todos(date_str)');
+    }
+    if (oldVersion < 7) {
+      // 添加系统相册标签关联表
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS system_asset_tags (
+          asset_id TEXT NOT NULL,
+          tag_id INTEGER NOT NULL,
+          PRIMARY KEY (asset_id, tag_id),
+          FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+        )
+      ''');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_system_asset_tags_asset_id ON system_asset_tags(asset_id)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_system_asset_tags_tag_id ON system_asset_tags(tag_id)');
     }
   }
 
@@ -537,6 +562,65 @@ class DatabaseService {
       [tagId],
     );
     return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  // ==================== 系统相册标签操作 ====================
+
+  /// 获取系统相册照片的标签
+  Future<List<Tag>> getTagsForAsset(String assetId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT t.* FROM tags t
+      INNER JOIN system_asset_tags sat ON t.id = sat.tag_id
+      WHERE sat.asset_id = ?
+    ''', [assetId]);
+    return maps.map((map) => Tag.fromMap(map)).toList();
+  }
+
+  /// 设置系统相册照片的标签（替换所有）
+  Future<void> setTagsForAsset(String assetId, List<int> tagIds) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      // 删除旧的关联
+      await txn.delete('system_asset_tags', where: 'asset_id = ?', whereArgs: [assetId]);
+      // 添加新的关联
+      for (final tagId in tagIds) {
+        await txn.insert('system_asset_tags', {'asset_id': assetId, 'tag_id': tagId});
+      }
+    });
+  }
+
+  /// 获取拥有指定标签的所有系统相册照片 ID
+  Future<List<String>> getAssetIdsByTag(int tagId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'system_asset_tags',
+      columns: ['asset_id'],
+      where: 'tag_id = ?',
+      whereArgs: [tagId],
+    );
+    return maps.map((map) => map['asset_id'] as String).toList();
+  }
+
+  /// 获取拥有任意指定标签的所有系统相册照片 ID
+  Future<List<String>> getAssetIdsByTags(List<int> tagIds) async {
+    if (tagIds.isEmpty) return [];
+    final db = await database;
+    final placeholders = tagIds.map((_) => '?').join(',');
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT DISTINCT asset_id FROM system_asset_tags
+      WHERE tag_id IN ($placeholders)
+    ''', tagIds);
+    return maps.map((map) => map['asset_id'] as String).toList();
+  }
+
+  /// 获取所有有标签的系统相册照片 ID
+  Future<Set<String>> getAllTaggedAssetIds() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      'SELECT DISTINCT asset_id FROM system_asset_tags'
+    );
+    return maps.map((map) => map['asset_id'] as String).toSet();
   }
 
   // ==================== TodoItem 操作 ====================
