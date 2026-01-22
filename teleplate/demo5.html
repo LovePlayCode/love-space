@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>纪念日助手 - 纪念日</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FF8E8E",
+              "primary-dark": "#FF6B6B",
+              "secondary-green": "#88D4AB",
+              "secondary-yellow": "#FFD93D",
+              "secondary-blue": "#6BCBFF",
+              "background-light": "#FFF9F5",
+              "background-dark": "#2A2533",
+              "surface-dark": "#3D3547",
+            },
+            fontFamily: {
+              display: ["ZCOOL KuaiLe", "cursive"],
+              body: ["Noto Sans SC", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+              lg: "0.75rem",
+              xl: "1rem",
+              "2xl": "1.5rem",
+              "3xl": "2rem",
+              full: "9999px",
+            },
+            boxShadow: {
+              sticker:
+                "0 6px 0px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.05)",
+              "sticker-hover":
+                "0 8px 0px rgba(0, 0, 0, 0.1), 0 15px 15px rgba(0, 0, 0, 0.05)",
+              "sticker-sm": "0 3px 0px rgba(0, 0, 0, 0.1)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      body {
+        min-height: max(884px, 100dvh);
+      }
+      .font-cute-num {
+        font-family: "ZCOOL KuaiLe", cursive;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-body text-[#4A403A] dark:text-white transition-colors duration-300"
+  >
+    <div
+      class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-[#FFF9F5] dark:bg-background-dark bg-[radial-gradient(#FFE4E4_1px,transparent_1px)] [background-size:20px_20px]"
+    >
+      <header
+        class="sticky top-0 z-20 flex items-center justify-between px-6 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md transition-colors"
+      >
+        <div class="flex items-center gap-2">
+          <button
+            class="flex size-10 items-center justify-center rounded-full bg-white dark:bg-surface-dark shadow-sticker-sm text-[#4A403A] dark:text-white hover:bg-gray-50 transition-colors"
+          >
+            <span class="material-symbols-outlined text-2xl">arrow_back</span>
+          </button>
+        </div>
+        <h1
+          class="text-2xl font-display text-primary-dark tracking-wide absolute left-1/2 -translate-x-1/2"
+        >
+          纪念日
+        </h1>
+        <button
+          class="bg-white dark:bg-surface-dark text-primary-dark font-display text-sm hover:text-primary transition-colors px-4 py-2 rounded-xl shadow-sticker-sm border-2 border-primary/20"
+        >
+          添加
+        </button>
+      </header>
+      <main class="flex-1 flex flex-col pb-28">
+        <div class="px-5 pt-4 pb-2">
+          <div
+            class="relative w-full aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-sticker border-4 border-white dark:border-surface-dark group cursor-pointer transform hover:-translate-y-1 transition-transform duration-300"
+          >
+            <div
+              class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+              data-alt="Romantic couples hands holding sparklers at dusk"
+              style="
+                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDNBmVtNQdESMhUCtlc06rhs1Svkx_aixcg32xBdVe62o8BAY1P7AApuMYWWkOcgFMyGD_p0Vzotj6JY2_YVOLp7smpSiNNWDKD6Qg6gCPZM6_asVvTLCQfCttQnCXMJQcF4GZafMz9Ji2P7A-76NSV3BH5tD4B_HCCRYv2CASesKoWbGe_O4BUrIMoifLipEst-zPiH1tz-hw6nsyO8lMqG3mbjDJb2ZqT6NxkEuHqDRC7xUxPF1pFFwYE9_dKBXxKAYwUXkOxfSiJ');
+              "
+            ></div>
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-primary-dark/90 via-primary/30 to-transparent"
+            ></div>
+            <div
+              class="absolute bottom-0 left-0 w-full p-6 flex flex-col gap-2"
+            >
+              <div class="flex items-center gap-2 mb-1">
+                <span
+                  class="px-3 py-1 rounded-full bg-white text-primary-dark text-xs font-display shadow-sm transform -rotate-2"
+                  >✨ 下一个大日子</span
+                >
+              </div>
+              <h2
+                class="text-white text-4xl font-display leading-tight tracking-wide drop-shadow-md"
+              >
+                三周年纪念
+              </h2>
+              <div
+                class="flex items-baseline gap-3 mt-1 bg-white/20 backdrop-blur-sm p-3 rounded-2xl w-fit border border-white/30"
+              >
+                <span
+                  class="text-white font-cute-num text-6xl tracking-tight drop-shadow-sm"
+                  >12</span
+                >
+                <span class="text-white/90 text-xl font-display">天后</span>
+              </div>
+              <p
+                class="text-white/80 text-sm font-medium mt-1 bg-black/10 px-3 py-1 rounded-lg w-fit backdrop-blur-sm"
+              >
+                2024年10月14日
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8">
+          <div class="px-6 pb-4 flex items-center justify-between">
+            <h3
+              class="text-xl font-display text-primary-dark dark:text-primary-300 flex items-center gap-2"
+            >
+              <span
+                class="material-symbols-outlined filled text-secondary-yellow"
+                >star</span
+              >
+              即将到来
+            </h3>
+            <span
+              class="text-xs font-bold text-primary/60 bg-primary/10 px-3 py-1 rounded-full"
+              >期待中...</span
+            >
+          </div>
+          <div class="flex flex-col gap-5 px-5">
+            <div
+              class="group relative flex flex-col bg-white dark:bg-surface-dark p-5 rounded-[2rem] shadow-sticker border-2 border-primary/10 transition-all hover:-translate-y-1 hover:shadow-sticker-hover"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="size-16 rounded-full bg-secondary-blue/20 flex items-center justify-center shrink-0 text-secondary-blue border-2 border-secondary-blue/30 transform -rotate-6"
+                >
+                  <span class="material-symbols-outlined text-[32px]"
+                    >flight_takeoff</span
+                  >
+                </div>
+                <div class="flex flex-col flex-1 min-w-0">
+                  <p
+                    class="text-[#4A403A] dark:text-white text-lg font-display truncate"
+                  >
+                    巴黎之旅
+                  </p>
+                  <p class="text-gray-400 dark:text-gray-300 text-sm mt-1">
+                    2024年11月20日
+                  </p>
+                </div>
+                <div class="flex flex-col items-end shrink-0">
+                  <span
+                    class="bg-primary text-white px-4 py-2 rounded-xl text-sm font-cute-num shadow-sm transform rotate-3"
+                  >
+                    还有 45 天
+                  </span>
+                </div>
+              </div>
+              <div
+                class="mt-4 w-full h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden border border-gray-100 dark:border-gray-600"
+              >
+                <div
+                  class="h-full bg-secondary-blue rounded-full w-[40%] border-r-2 border-white/50"
+                ></div>
+              </div>
+            </div>
+            <div
+              class="group relative flex flex-col bg-white dark:bg-surface-dark p-5 rounded-[2rem] shadow-sticker border-2 border-primary/10 transition-all hover:-translate-y-1 hover:shadow-sticker-hover"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="size-16 rounded-full bg-primary/20 flex items-center justify-center shrink-0 text-primary border-2 border-primary/30 transform rotate-6"
+                >
+                  <span class="material-symbols-outlined text-[32px]"
+                    >cake</span
+                  >
+                </div>
+                <div class="flex flex-col flex-1 min-w-0">
+                  <p
+                    class="text-[#4A403A] dark:text-white text-lg font-display truncate"
+                  >
+                    一起过圣诞
+                  </p>
+                  <p class="text-gray-400 dark:text-gray-300 text-sm mt-1">
+                    2024年12月25日
+                  </p>
+                </div>
+                <div class="flex flex-col items-end shrink-0">
+                  <span
+                    class="bg-primary text-white px-4 py-2 rounded-xl text-sm font-cute-num shadow-sm transform -rotate-2"
+                  >
+                    还有 80 天
+                  </span>
+                </div>
+              </div>
+              <div
+                class="mt-4 w-full h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden border border-gray-100 dark:border-gray-600"
+              >
+                <div
+                  class="h-full bg-primary rounded-full w-[25%] border-r-2 border-white/50"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8">
+          <div class="px-6 pb-4 flex items-center justify-between">
+            <h3
+              class="text-xl font-display text-secondary-green dark:text-green-300 flex items-center gap-2"
+            >
+              <span
+                class="material-symbols-outlined filled text-secondary-green"
+                >favorite</span
+              >
+              美好回忆
+            </h3>
+            <span
+              class="text-xs font-bold text-secondary-green/60 bg-secondary-green/10 px-3 py-1 rounded-full"
+              >点点滴滴</span
+            >
+          </div>
+          <div class="flex flex-col gap-4 px-5">
+            <div
+              class="group relative flex items-center gap-4 bg-[#F0FFF4] dark:bg-surface-dark p-4 rounded-[1.8rem] border-2 border-secondary-green/20 shadow-sm hover:shadow-md transition-all"
+            >
+              <div
+                class="size-14 rounded-2xl bg-white dark:bg-secondary-green/20 flex items-center justify-center shrink-0 text-secondary-green shadow-sm transform -rotate-3"
+              >
+                <span class="material-symbols-outlined text-[26px]"
+                  >favorite</span
+                >
+              </div>
+              <div class="flex flex-col flex-1 min-w-0">
+                <p
+                  class="text-[#4A403A] dark:text-white text-base font-display truncate"
+                >
+                  初吻
+                </p>
+                <p class="text-gray-400 dark:text-gray-400 text-xs mt-0.5">
+                  2023年5月5日
+                </p>
+              </div>
+              <div class="flex flex-col items-end shrink-0">
+                <span
+                  class="text-secondary-green font-cute-num text-lg font-bold whitespace-nowrap bg-white dark:bg-gray-700 px-3 py-1 rounded-lg border-2 border-dashed border-secondary-green/30"
+                >
+                  已过 240 天
+                </span>
+              </div>
+            </div>
+            <div
+              class="group relative flex items-center gap-4 bg-[#F0FFF4] dark:bg-surface-dark p-4 rounded-[1.8rem] border-2 border-secondary-green/20 shadow-sm hover:shadow-md transition-all"
+            >
+              <div
+                class="size-14 rounded-2xl bg-white dark:bg-secondary-green/20 flex items-center justify-center shrink-0 text-secondary-green shadow-sm transform rotate-3"
+              >
+                <span class="material-symbols-outlined text-[26px]">home</span>
+              </div>
+              <div class="flex flex-col flex-1 min-w-0">
+                <p
+                  class="text-[#4A403A] dark:text-white text-base font-display truncate"
+                >
+                  搬到一起住
+                </p>
+                <p class="text-gray-400 dark:text-gray-400 text-xs mt-0.5">
+                  2023年2月14日
+                </p>
+              </div>
+              <div class="flex flex-col items-end shrink-0">
+                <span
+                  class="text-secondary-green font-cute-num text-lg font-bold whitespace-nowrap bg-white dark:bg-gray-700 px-3 py-1 rounded-lg border-2 border-dashed border-secondary-green/30"
+                >
+                  已过 1 年
+                </span>
+              </div>
+            </div>
+            <div
+              class="group relative flex items-center gap-4 bg-[#F0FFF4] dark:bg-surface-dark p-4 rounded-[1.8rem] border-2 border-secondary-green/20 shadow-sm hover:shadow-md transition-all"
+            >
+              <div
+                class="size-14 rounded-2xl overflow-hidden shrink-0 shadow-sm rotate-2 border-2 border-white"
+              >
+                <img
+                  class="w-full h-full object-cover"
+                  data-alt="Small thumbnail of a couple walking in snow"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuqvMJopu2bljl7fvyo17P-lo68eNkdQ_Amiy1URHSW_0nCsrIULSUHbFeIztrvxPE2gzoyGSgLVjGByH4Aamc4HgTPlvaT2Yn3X4Pa3YdzDiUWHfrdPAz0m50nIsNfAS0PkDoOq4Dyvq1o1wddvrRcrILLfH8FQTMtdK5ThKHRyTOFD-GJftFjZB-F6mgKFLBLpFl_7F6xqjDGbQCtpg0aG1DmnRl63A2troliTGL4RyT88dv_Bjv7t28xgpiHXvyCmgjzIV8PWHP"
+                />
+              </div>
+              <div class="flex flex-col flex-1 min-w-0">
+                <p
+                  class="text-[#4A403A] dark:text-white text-base font-display truncate"
+                >
+                  第一次冬季旅行
+                </p>
+                <p class="text-gray-400 dark:text-gray-400 text-xs mt-0.5">
+                  2023年1月10日
+                </p>
+              </div>
+              <div class="flex flex-col items-end shrink-0">
+                <span
+                  class="text-secondary-green font-cute-num text-lg font-bold whitespace-nowrap bg-white dark:bg-gray-700 px-3 py-1 rounded-lg border-2 border-dashed border-secondary-green/30"
+                >
+                  已过 1.5 年
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <button
+        class="fixed bottom-24 right-6 z-40 size-16 rounded-full bg-primary text-white shadow-[0_8px_0_#e06868,0_15px_20px_rgba(0,0,0,0.2)] flex items-center justify-center hover:translate-y-1 hover:shadow-[0_4px_0_#e06868,0_10px_10px_rgba(0,0,0,0.1)] active:translate-y-2 active:shadow-none transition-all duration-200 border-4 border-white/20"
+      >
+        <span class="material-symbols-outlined text-4xl font-bold">add</span>
+      </button>
+      <nav
+        class="fixed bottom-0 left-0 w-full bg-white dark:bg-surface-dark rounded-t-[2rem] shadow-[0_-5px_20px_rgba(0,0,0,0.05)] border-t border-gray-100 dark:border-gray-800 pb-safe pt-2 z-30"
+      >
+        <div
+          class="flex justify-around items-center h-20 max-w-md mx-auto px-2"
+        >
+          <div
+            class="group flex flex-col items-center justify-center w-full text-gray-400 dark:text-gray-500 hover:text-primary transition-colors cursor-pointer"
+          >
+            <div
+              class="p-1 rounded-xl group-hover:bg-primary/10 transition-colors"
+            >
+              <span class="material-symbols-outlined text-[28px]">home</span>
+            </div>
+            <span class="text-[11px] font-display mt-1">首页</span>
+          </div>
+          <div
+            class="group flex flex-col items-center justify-center w-full text-gray-400 dark:text-gray-500 hover:text-primary transition-colors cursor-pointer"
+          >
+            <div
+              class="p-1 rounded-xl group-hover:bg-primary/10 transition-colors"
+            >
+              <span class="material-symbols-outlined text-[28px]"
+                >calendar_month</span
+              >
+            </div>
+            <span class="text-[11px] font-display mt-1">日历</span>
+          </div>
+          <div
+            class="flex flex-col items-center justify-center w-full text-primary cursor-pointer"
+          >
+            <div class="p-1 rounded-xl bg-primary/10 transition-colors">
+              <span class="material-symbols-outlined text-[28px] fill-current"
+                >favorite</span
+              >
+            </div>
+            <span class="text-[11px] font-display mt-1 font-bold">纪念日</span>
+          </div>
+          <div
+            class="group flex flex-col items-center justify-center w-full text-gray-400 dark:text-gray-500 hover:text-primary transition-colors cursor-pointer"
+          >
+            <div
+              class="p-1 rounded-xl group-hover:bg-primary/10 transition-colors"
+            >
+              <span class="material-symbols-outlined text-[28px]"
+                >settings</span
+              >
+            </div>
+            <span class="text-[11px] font-display mt-1">设置</span>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </body>
+</html>

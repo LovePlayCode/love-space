@@ -7,6 +7,7 @@ import '../../screens/album/system_photo_detail_screen.dart';
 import '../../screens/album/media_picker_screen.dart';
 import '../../screens/calendar/calendar_screen.dart';
 import '../../screens/calendar/daily_detail_screen.dart';
+import '../../screens/calendar/daily_view_screen.dart';
 import '../../screens/anniversary/anniversary_screen.dart';
 import '../../screens/anniversary/anniversary_edit_screen.dart';
 import '../../screens/settings/settings_screen.dart';
@@ -23,7 +24,8 @@ class AppRoutes {
   static const String photoDetail = '/album/photo/:id';
   static const String mediaPicker = '/media-picker';
   static const String calendar = '/calendar';
-  static const String dailyDetail = '/calendar/day/:date';
+  static const String dailyView = '/calendar/day/:date';
+  static const String dailyEdit = '/calendar/day/:date/edit';
   static const String anniversary = '/anniversary';
   static const String anniversaryEdit = '/anniversary/edit';
   static const String anniversaryAdd = '/anniversary/add';
@@ -101,7 +103,14 @@ class AppRouter {
         builder: (context, state) => const MediaPickerScreen(),
       ),
       GoRoute(
-        path: AppRoutes.dailyDetail,
+        path: AppRoutes.dailyView,
+        builder: (context, state) {
+          final dateStr = state.pathParameters['date'] ?? '';
+          return DailyViewScreen(dateStr: dateStr);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.dailyEdit,
         builder: (context, state) {
           final dateStr = state.pathParameters['date'] ?? '';
           return DailyDetailScreen(dateStr: dateStr);

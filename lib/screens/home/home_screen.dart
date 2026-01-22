@@ -8,7 +8,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/routes/app_router.dart';
 import '../../providers/couple_provider.dart';
 import '../../providers/album_provider.dart';
+import '../../providers/calendar_provider.dart';
 import '../../models/media_item.dart';
+import '../../models/daily_log.dart';
 import '../../widgets/common/loading_widget.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -60,9 +62,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     },
                   ),
                 ),
-                // 最近照片瀑布流
+                // 最近日记瀑布流
                 SliverToBoxAdapter(
-                  child: _buildPhotoGrid(context, albumAsync),
+                  child: _buildLogGrid(context),
                 ),
                 // 底部间距
                 const SliverToBoxAdapter(child: SizedBox(height: 120)),
@@ -149,6 +151,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Image.file(
                       File(backgroundImage),
                       fit: BoxFit.cover,
+                      errorBuilder: (ctx, err, stack) => Container(
+                        decoration: const BoxDecoration(
+                          gradient: AppColors.primaryGradient,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -396,6 +403,283 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  /// 构建日记瀑布流 - 按日期从近到远排序
+  Widget _buildLogGrid(BuildContext context) {
+    final logsAsync = ref.watch(dailyLogProvider);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: logsAsync.when(
+        loading: () => const SizedBox(
+          height: 200,
+          child: Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
+        ),
+        error: (e, st) => _buildEmptyCard(
+          icon: Icons.calendar_month_rounded,
+          title: '加载失败',
+          subtitle: '点击重试',
+          onTap: () => ref.refresh(dailyLogProvider),
+        ),
+        data: (logsMap) {
+          // 过滤有内容的日记，按日期从近到远排序
+          final logs = logsMap.values
+              .where((log) => log.hasTitle || log.hasContent || log.hasMood)
+              .toList()
+            ..sort((a, b) => b.dateStr.compareTo(a.dateStr));
+
+          if (logs.isEmpty) {
+            return _buildEmptyCard(
+              icon: Icons.calendar_month_rounded,
+              title: '暂无日记',
+              subtitle: '点击日历记录美好时光',
+              onTap: () => context.go(AppRoutes.calendar),
+            );
+          }
+          return _buildLogMasonryGrid(context, logs);
+        },
+      ),
+    );
+  }
+
+  Widget _buildLogMasonryGrid(BuildContext context, List<DailyLog> logs) {
+    final List<Widget> leftColumn = [];
+    final List<Widget> rightColumn = [];
+
+    // 预设不同的宽高比
+    final ratios = [3 / 4, 1.0, 4 / 3, 3 / 5, 1.0, 2 / 3];
+
+    for (var i = 0; i < logs.length && i < 10; i++) {
+      final log = logs[i];
+      final ratio = ratios[i % ratios.length];
+      final card = _buildLogCard(context, log, ratio);
+
+      if (i % 2 == 0) {
+        leftColumn.add(card);
+      } else {
+        rightColumn.add(card);
+      }
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(children: leftColumn),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(children: rightColumn),
+        ),
+      ],
+    );
+  }
+
+  /// 日记卡片 - 图片在上，标题描述在下
+  Widget _buildLogCard(BuildContext context, DailyLog log, double aspectRatio) {
+    // 解析日期
+    final dateParts = log.dateStr.split('-');
+    final date = DateTime(
+      int.parse(dateParts[0]),
+      int.parse(dateParts[1]),
+      int.parse(dateParts[2]),
+    );
+    final dateStr = DateFormat('M月dd日').format(date);
+
+    // 获取该日期关联的照片
+    final mediaAsync = ref.watch(dateMediaProvider(date));
+
+    return GestureDetector(
+      onTap: () => context.push('/calendar/day/${log.dateStr}'),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: AppColors.backgroundWhite,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: AppColors.backgroundWhite,
+            width: 2,
+          ),
+          boxShadow: AppColors.cuteShadow,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 图片区域
+              Container(
+                margin: const EdgeInsets.all(10),
+                child: AspectRatio(
+                  aspectRatio: aspectRatio,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // 图片背景
+                        mediaAsync.when(
+                          data: (assets) {
+                            if (assets.isNotEmpty) {
+                              // 显示第一张照片
+                              return FutureBuilder<File?>(
+                                future: assets.first.file,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData && snapshot.data != null) {
+                                    return Image.file(
+                                      snapshot.data!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (ctx, err, stack) =>
+                                          _buildGradientBackground(log),
+                                    );
+                                  }
+                                  return _buildGradientBackground(log);
+                                },
+                              );
+                            }
+                            return _buildGradientBackground(log);
+                          },
+                          loading: () => _buildGradientBackground(log),
+                          error: (_, __) => _buildGradientBackground(log),
+                        ),
+                        // 日期标签 - 右上角
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              dateStr,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primaryDark,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // 标题和描述 - 在图片下方
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 标题行（心情emoji + 标题）
+                    Row(
+                      children: [
+                        if (log.hasMood) ...[
+                          Text(
+                            log.mood!,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        if (log.hasTitle)
+                          Expanded(
+                            child: Text(
+                              log.title!,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          )
+                        else if (!log.hasMood)
+                          // 没有标题和心情时显示默认文字
+                          const Text(
+                            '记录了这一天',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                      ],
+                    ),
+                    // 内容预览
+                    if (log.hasContent) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        log.content!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 渐变背景 - 根据心情选择不同颜色
+  Widget _buildGradientBackground(DailyLog log) {
+    final colors = _getMoodColors(log.mood);
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
+        ),
+      ),
+      child: Center(
+        child: log.hasMood
+            ? Text(
+                log.mood!,
+                style: const TextStyle(fontSize: 48),
+              )
+            : Icon(
+                Icons.edit_note_rounded,
+                size: 48,
+                color: Colors.white.withValues(alpha: 0.5),
+              ),
+      ),
+    );
+  }
+
+  /// 根据心情返回渐变颜色
+  List<Color> _getMoodColors(String? mood) {
+    switch (mood) {
+      case '🥰':
+        return [const Color(0xFFFFB6C1), const Color(0xFFFF69B4)];
+      case '😍':
+        return [const Color(0xFFFF6B6B), const Color(0xFFFF8E8E)];
+      case '😐':
+        return [const Color(0xFFB0C4DE), const Color(0xFF87CEEB)];
+      case '😢':
+        return [const Color(0xFF6B8E9F), const Color(0xFF4A6572)];
+      case '😡':
+        return [const Color(0xFFCD5C5C), const Color(0xFF8B0000)];
+      default:
+        return [AppColors.primaryLighter, AppColors.primary];
+    }
+  }
+
   Widget _buildPhotoGrid(
     BuildContext context,
     AsyncValue<List<MediaItem>> albumAsync,
@@ -431,6 +715,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildMasonryGrid(BuildContext context, List<MediaItem> items) {
+    // 获取日记数据
+    final logsAsync = ref.watch(dailyLogProvider);
+    final logsMap = logsAsync.maybeWhen(
+      data: (logs) => logs,
+      orElse: () => <String, DailyLog>{},
+    );
+
     // 使用瀑布流布局，模拟 HTML 中的 columns-2 效果
     final List<Widget> leftColumn = [];
     final List<Widget> rightColumn = [];
@@ -441,7 +732,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     for (var i = 0; i < items.length && i < 10; i++) {
       final item = items[i];
       final ratio = ratios[i % ratios.length];
-      final card = _buildPhotoCard(context, item, ratio);
+      
+      // 根据照片日期获取对应的日记
+      final dateStr = DateFormat('yyyy-MM-dd').format(item.takenDateTime);
+      final log = logsMap[dateStr];
+      
+      final card = _buildPhotoCard(context, item, ratio, log: log);
 
       if (i % 2 == 0) {
         leftColumn.add(card);
@@ -464,8 +760,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildPhotoCard(BuildContext context, MediaItem item, double aspectRatio) {
+  Widget _buildPhotoCard(BuildContext context, MediaItem item, double aspectRatio, {DailyLog? log}) {
     final dateStr = DateFormat('M月dd日').format(item.takenDateTime);
+    final hasLogContent = log != null && (log.hasTitle || log.hasContent || log.hasMood);
 
     return GestureDetector(
       onTap: () => context.push('/moment/${item.id}'),
@@ -536,7 +833,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                             ),
                           ),
-                        // 日期标签
+                        // 日期标签 - 右上角
                         Positioned(
                           top: 8,
                           right: 8,
@@ -565,13 +862,77 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
                         ),
+                        // 日记内容叠加在图片底部
+                        if (hasLogContent)
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              padding: const EdgeInsets.fromLTRB(12, 24, 12, 12),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withValues(alpha: 0.6),
+                                  ],
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // 标题行（心情emoji + 标题）
+                                  Row(
+                                    children: [
+                                      if (log.hasMood) ...[
+                                        Text(
+                                          log.mood!,
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        const SizedBox(width: 6),
+                                      ],
+                                      if (log.hasTitle)
+                                        Expanded(
+                                          child: Text(
+                                            log.title!,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  // 内容预览
+                                  if (log.hasContent) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      log.content!,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.white.withValues(alpha: 0.9),
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
                 ),
               ),
-              // 标题
-              if (item.caption != null && item.caption!.isNotEmpty)
+              // 标题（仅当没有日记内容时显示 caption）
+              if (!hasLogContent && item.caption != null && item.caption!.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
                   child: Text(
