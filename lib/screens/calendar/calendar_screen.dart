@@ -949,7 +949,17 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   void _navigateToDayDetail(DateTime date) {
     final dateStr = DailyLog.formatDateStr(date);
-    context.push('/calendar/day/$dateStr');
+    // 检查当天是否有日记记录
+    final log = ref.read(dateLogProvider(dateStr));
+    final hasRecord = log != null && !log.isEmpty;
+    
+    if (hasRecord) {
+      // 有记录，进入详情页
+      context.push('/calendar/day/$dateStr');
+    } else {
+      // 没有记录，进入编辑页（创建）
+      context.push('/calendar/day/$dateStr/edit');
+    }
   }
 }
 

@@ -304,10 +304,6 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
         decoration: BoxDecoration(
           color: AppColors.backgroundWhite,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.2),
-            width: 2,
-          ),
           boxShadow: AppColors.cuteShadow,
         ),
         child: Row(
@@ -323,7 +319,7 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
             Expanded(
               child: TextField(
                 controller: _titleController,
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.left,
                 decoration: InputDecoration(
                   hintText: '给今天起个标题吧...',
                   hintStyle: TextStyle(
@@ -332,6 +328,8 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
                     fontWeight: FontWeight.w700,
                   ),
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 12,
