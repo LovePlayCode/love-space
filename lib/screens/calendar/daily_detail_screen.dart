@@ -51,6 +51,7 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
   void _loadExistingLog() {
     final log = ref.read(dateLogProvider(widget.dateStr));
     if (log != null) {
+      _titleController.text = log.title ?? '';
       _contentController.text = log.content ?? '';
       _selectedMood = log.mood;
     }
@@ -898,14 +899,16 @@ class _DailyDetailScreenState extends ConsumerState<DailyDetailScreen> {
   }
 
   Future<void> _saveLog() async {
+    final title = _titleController.text.trim();
     final content = _contentController.text.trim();
 
-    if (content.isEmpty && _selectedMood == null) {
-      // 如果内容和心情都为空，删除日记
+    if (title.isEmpty && content.isEmpty && _selectedMood == null) {
+      // 如果标题、内容和心情都为空，删除日记
       await ref.read(dailyLogProvider.notifier).deleteLog(widget.dateStr);
     } else {
       final log = DailyLog(
         dateStr: widget.dateStr,
+        title: title.isEmpty ? null : title,
         content: content.isEmpty ? null : content,
         mood: _selectedMood,
       );

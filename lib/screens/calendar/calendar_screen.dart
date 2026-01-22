@@ -20,6 +20,25 @@ class CalendarScreen extends ConsumerStatefulWidget {
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   DateTime _focusedMonth = DateTime.now();
 
+  /// 根据心情 emoji 获取对应文案
+  String _getMoodText(String? mood) {
+    if (mood == null) return '写下心情';
+    switch (mood) {
+      case '🥰':
+        return '今天很开心';
+      case '😍':
+        return '甜蜜恩爱';
+      case '😐':
+        return '平淡的一天';
+      case '😢':
+        return '有点难过';
+      case '😡':
+        return '心情不好';
+      default:
+        return '记录心情';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final selectedDate = ref.watch(selectedDateProvider);
@@ -387,7 +406,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     AsyncValue<List> mediaAsync,
     AsyncValue<List<TodoItem>> todosAsync,
   ) {
-    final hasLog = log != null && (log.hasMood || log.hasContent);
+    final hasLog = log != null && (log.hasMood || log.hasContent || log.hasTitle);
     final hasMedia = mediaAsync.maybeWhen(
       data: (items) => items.isNotEmpty,
       orElse: () => false,
@@ -562,7 +581,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              log.hasMood ? '心情不错' : '写下心情',
+                              _getMoodText(log.mood),
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
@@ -584,21 +603,24 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       ),
                     ],
                   ),
-                  if (log.hasContent) ...[
+                  if (log.hasTitle || log.hasContent) ...[
                     const SizedBox(height: 12),
                     // 标题
-                    Text(
-                      log.content!.split('\n').first,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    if (log.content!.contains('\n')) ...[
-                      const SizedBox(height: 8),
+                    if (log.hasTitle)
                       Text(
-                        log.content!.split('\n').skip(1).join('\n'),
+                        log.title!,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    if (log.hasContent) ...[
+                      if (log.hasTitle) const SizedBox(height: 8),
+                      Text(
+                        log.content!,
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textPrimary.withValues(alpha: 0.8),

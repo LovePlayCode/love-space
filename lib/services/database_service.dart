@@ -55,6 +55,7 @@ class DatabaseService {
     await db.execute('''
       CREATE TABLE daily_logs (
         date_str TEXT PRIMARY KEY,
+        title TEXT,
         content TEXT,
         mood TEXT,
         updated_at INTEGER NOT NULL
@@ -217,6 +218,10 @@ class DatabaseService {
       ''');
       await db.execute('CREATE INDEX IF NOT EXISTS idx_date_assets_date_str ON date_assets(date_str)');
       await db.execute('CREATE INDEX IF NOT EXISTS idx_date_assets_asset_id ON date_assets(asset_id)');
+    }
+    if (oldVersion < 9) {
+      // 添加日记标题字段
+      await db.execute('ALTER TABLE daily_logs ADD COLUMN title TEXT');
     }
   }
 
