@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:photo_manager/photo_manager.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../providers/album_provider.dart';
 import '../../services/media_service.dart';
 
 /// 媒体选择器页面
@@ -103,10 +102,7 @@ class _MediaPickerScreenState extends ConsumerState<MediaPickerScreen> {
 
     final assets = _selectedAssets.toList();
     debugPrint('selected assets: $assets');
-    context.pop(); // 先关闭选择器
-
-    // 导入资源
-    await ref.read(albumProvider.notifier).importAssets(assets);
+    context.pop(assets); // 返回选中的资源
   }
 
   @override

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../screens/home/home_screen.dart';
+import '../../screens/home/moment_detail_screen.dart';
 import '../../screens/album/system_album_screen.dart';
 import '../../screens/album/system_photo_detail_screen.dart';
+import '../../screens/album/media_picker_screen.dart';
 import '../../screens/calendar/calendar_screen.dart';
 import '../../screens/calendar/daily_detail_screen.dart';
 import '../../screens/anniversary/anniversary_screen.dart';
@@ -16,8 +18,10 @@ class AppRoutes {
   AppRoutes._();
 
   static const String home = '/';
+  static const String momentDetail = '/moment/:id';
   static const String album = '/album';
   static const String photoDetail = '/album/photo/:id';
+  static const String mediaPicker = '/media-picker';
   static const String calendar = '/calendar';
   static const String dailyDetail = '/calendar/day/:date';
   static const String anniversary = '/anniversary';
@@ -72,6 +76,14 @@ class AppRouter {
 
       // 独立页面（不带底部导航栏）
       GoRoute(
+        path: AppRoutes.momentDetail,
+        builder: (context, state) {
+          final idStr = state.pathParameters['id'] ?? '0';
+          final id = int.tryParse(idStr) ?? 0;
+          return MomentDetailScreen(mediaId: id);
+        },
+      ),
+      GoRoute(
         path: AppRoutes.album,
         builder: (context, state) => const SystemAlbumScreen(),
       ),
@@ -83,6 +95,10 @@ class AppRouter {
           final id = Uri.decodeComponent(encodedId);
           return SystemPhotoDetailScreen(assetId: id);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.mediaPicker,
+        builder: (context, state) => const MediaPickerScreen(),
       ),
       GoRoute(
         path: AppRoutes.dailyDetail,

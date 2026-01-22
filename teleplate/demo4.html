@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>记录今日时光</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&amp;family=Varela+Round&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FF9AA2",
+              "primary-dark": "#FF6F7D",
+              secondary: "#B5EAD7",
+              accent: "#FFDAC1",
+              "background-paper": "#FFFDF9",
+              "text-ink": "#4A4A4A",
+              "text-light": "#9CA3AF",
+            },
+            fontFamily: {
+              cartoon: ["ZCOOL KuaiLe", "cursive"],
+              soft: ["Varela Round", "sans-serif"],
+            },
+            borderRadius: {
+              blob: "20px 50px 30px 40px",
+              hand: "255px 15px 225px 15px / 15px 225px 15px 255px",
+            },
+            boxShadow: {
+              paper: "2px 4px 12px rgba(0,0,0,0.06)",
+              sticker: "0px 4px 0px rgba(0,0,0,0.1)",
+              "sticker-hover": "0px 2px 0px rgba(0,0,0,0.1)",
+              "inner-soft": "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
+            },
+            animation: {
+              "bounce-slight": "bounce-slight 2s infinite",
+            },
+            keyframes: {
+              "bounce-slight": {
+                "0%, 100%": { transform: "translateY(-10%)" },
+                "50%": { transform: "translateY(0)" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .lined-paper {
+        background-color: transparent;
+        background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
+        background-size: 100% 32px;
+        line-height: 32px;
+        background-attachment: local;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-paper font-cartoon text-text-ink min-h-screen relative overflow-hidden flex flex-col selection:bg-primary/30"
+  >
+    <div
+      class="fixed -top-32 -right-32 w-80 h-80 bg-secondary/20 rounded-full blur-[60px] z-0 pointer-events-none mix-blend-multiply"
+    ></div>
+    <div
+      class="fixed top-20 -left-20 w-64 h-64 bg-primary/10 rounded-full blur-[50px] z-0 pointer-events-none mix-blend-multiply"
+    ></div>
+    <div
+      class="fixed -bottom-20 right-0 w-96 h-96 bg-accent/15 rounded-full blur-[60px] z-0 pointer-events-none mix-blend-multiply"
+    ></div>
+    <header
+      class="sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-background-paper/90 backdrop-blur-md border-b-2 border-dashed border-primary/20"
+    >
+      <button
+        class="group flex items-center justify-center w-10 h-10 bg-white rounded-full border-2 border-gray-100 shadow-sm active:scale-95 transition-all hover:border-primary/50"
+      >
+        <span
+          class="material-symbols-outlined text-text-light group-hover:text-primary transition-colors text-[20px]"
+          >close</span
+        >
+      </button>
+      <h1 class="text-xl text-text-ink flex items-center gap-2 drop-shadow-sm">
+        <span>记录今日时光</span>
+        <span
+          class="material-symbols-outlined filled text-primary text-2xl animate-pulse"
+          >edit_note</span
+        >
+      </h1>
+      <div class="w-10"></div>
+    </header>
+    <main class="flex-1 overflow-y-auto relative z-10 px-5 pt-6 pb-36">
+      <div class="flex justify-center mb-6">
+        <div
+          class="relative group cursor-pointer transition-transform active:scale-95"
+        >
+          <div
+            class="absolute -top-2.5 left-1/2 -translate-x-1/2 w-20 h-5 bg-secondary/40 rotate-[-1deg] z-20 opacity-80 backdrop-blur-[1px]"
+            style="
+              mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjxwYXRoIGQ9Ik0wIDAgSDEwMCBWODAgUTkwIDEwMCA4MCA5MCBUNjAgOTUgVDQwIDg1IFQyMCA5NSBUMCA4MCBaIiBmaWxsPSJibGFjayIvPjwvc3ZnPg==');
+              -webkit-mask-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjxwYXRoIGQ9Ik0wIDAgSDEwMCBWODAgUTkwIDEwMCA4MCA5MCBUNjAgOTUgVDQwIDg1IFQyMCA5NSBUMCA4MCBaIiBmaWxsPSJibGFjayIvPjwvc3ZnPg==');
+            "
+          ></div>
+          <div
+            class="bg-white px-5 py-2.5 rounded-[20px] border-2 border-primary/20 shadow-paper flex items-center gap-2.5 relative z-10 hover:border-primary/40 transition-colors"
+          >
+            <span class="material-symbols-outlined text-primary text-[22px]"
+              >calendar_today</span
+            >
+            <span class="text-lg text-text-ink pt-0.5 font-bold tracking-wide"
+              >2023年 9月 24日</span
+            >
+            <span class="material-symbols-outlined text-text-light text-xl"
+              >arrow_drop_down</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="mb-8 px-1">
+        <div
+          class="group relative transition-transform focus-within:scale-[1.01] duration-300"
+        >
+          <div
+            class="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-[22px] blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"
+          ></div>
+          <div
+            class="relative bg-white rounded-[20px] border-2 border-primary/20 shadow-paper flex items-center hover:border-primary/40 transition-colors focus-within:border-primary/60 focus-within:ring-4 focus-within:ring-primary/5"
+          >
+            <div class="pl-4 pr-1 text-primary/40">
+              <span class="material-symbols-outlined text-[22px]">title</span>
+            </div>
+            <input
+              class="w-full bg-transparent border-none rounded-[20px] py-3 pr-4 text-center text-lg text-text-ink font-bold font-cartoon placeholder-text-light/50 focus:ring-0"
+              placeholder="给今天起个标题吧..."
+              spellcheck="false"
+              type="text"
+            />
+            <div
+              class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary/60 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <span class="material-symbols-outlined text-lg">edit</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-8">
+        <div class="flex items-center gap-2 mb-4 pl-1">
+          <span class="material-symbols-outlined text-primary text-xl"
+            >sentiment_satisfied</span
+          >
+          <h3 class="text-base font-bold text-text-ink/80">今日心情</h3>
+        </div>
+        <div class="flex justify-between items-end px-2 gap-2">
+          <button class="flex flex-col items-center gap-1.5 group w-1/5">
+            <div
+              class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white border-2 border-gray-100 shadow-sticker flex items-center justify-center text-2xl sm:text-3xl group-hover:-translate-y-1 transition-all duration-300 group-active:translate-y-0 group-active:shadow-none"
+            >
+              🥰
+            </div>
+            <span
+              class="text-xs text-text-light font-soft opacity-0 group-hover:opacity-100 transition-opacity"
+              >开心</span
+            >
+          </button>
+          <button class="flex flex-col items-center gap-1.5 group w-1/5">
+            <div class="relative w-12 h-12 sm:w-14 sm:h-14">
+              <div
+                class="absolute inset-0 bg-primary rounded-full animate-ping opacity-20"
+              ></div>
+              <div
+                class="relative w-full h-full rounded-full bg-primary text-white border-2 border-white shadow-sticker ring-2 ring-primary/20 flex items-center justify-center text-2xl sm:text-3xl -translate-y-2 transform"
+              >
+                😍
+              </div>
+            </div>
+            <span class="text-xs text-primary font-bold font-soft">恩爱</span>
+          </button>
+          <button class="flex flex-col items-center gap-1.5 group w-1/5">
+            <div
+              class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white border-2 border-gray-100 shadow-sticker flex items-center justify-center text-2xl sm:text-3xl grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-300"
+            >
+              😐
+            </div>
+            <span
+              class="text-xs text-text-light font-soft opacity-0 group-hover:opacity-100 transition-opacity"
+              >一般</span
+            >
+          </button>
+          <button class="flex flex-col items-center gap-1.5 group w-1/5">
+            <div
+              class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white border-2 border-gray-100 shadow-sticker flex items-center justify-center text-2xl sm:text-3xl grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-300"
+            >
+              😢
+            </div>
+            <span
+              class="text-xs text-text-light font-soft opacity-0 group-hover:opacity-100 transition-opacity"
+              >难过</span
+            >
+          </button>
+          <button class="flex flex-col items-center gap-1.5 group w-1/5">
+            <div
+              class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white border-2 border-gray-100 shadow-sticker flex items-center justify-center text-2xl sm:text-3xl grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-300"
+            >
+              😡
+            </div>
+            <span
+              class="text-xs text-text-light font-soft opacity-0 group-hover:opacity-100 transition-opacity"
+              >生气</span
+            >
+          </button>
+        </div>
+      </div>
+      <div class="relative mb-8 group">
+        <div
+          class="absolute -top-3 -right-2 w-12 h-8 bg-accent/40 rotate-[6deg] z-20 backdrop-blur-[1px] shadow-sm rounded-sm"
+        ></div>
+        <div
+          class="absolute -bottom-2 -left-2 w-16 h-6 bg-secondary/40 rotate-[-3deg] z-20 backdrop-blur-[1px] shadow-sm rounded-sm"
+        ></div>
+        <div
+          class="bg-white rounded-[24px] p-1 shadow-paper border border-gray-100 relative overflow-hidden transition-shadow hover:shadow-lg"
+        >
+          <div
+            class="absolute left-3 top-0 bottom-0 flex flex-col justify-evenly pointer-events-none py-4"
+          >
+            <div
+              class="w-3.5 h-3.5 rounded-full bg-gray-50 shadow-inner-soft border border-gray-100"
+            ></div>
+            <div
+              class="w-3.5 h-3.5 rounded-full bg-gray-50 shadow-inner-soft border border-gray-100"
+            ></div>
+            <div
+              class="w-3.5 h-3.5 rounded-full bg-gray-50 shadow-inner-soft border border-gray-100"
+            ></div>
+            <div
+              class="w-3.5 h-3.5 rounded-full bg-gray-50 shadow-inner-soft border border-gray-100"
+            ></div>
+            <div
+              class="w-3.5 h-3.5 rounded-full bg-gray-50 shadow-inner-soft border border-gray-100"
+            ></div>
+            <div
+              class="w-3.5 h-3.5 rounded-full bg-gray-50 shadow-inner-soft border border-gray-100"
+            ></div>
+          </div>
+          <div class="pl-10 pr-4 py-4 min-h-[260px]">
+            <textarea
+              class="w-full h-full resize-none border-none focus:ring-0 text-[17px] leading-[32px] text-text-ink font-cartoon lined-paper rounded-r-xl bg-transparent placeholder-text-light/50"
+              placeholder="今天发生了什么有趣的事？写下来吧..."
+              spellcheck="false"
+            >
+今天我们去了海边，简直太神奇了。夕阳是粉红和橙色的，映照在平静的水面上。我们聊着未来的计划，笑得肚子都疼了。</textarea
+            >
+          </div>
+        </div>
+      </div>
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-3 pl-1 pr-1">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-accent text-xl"
+              >photo_library</span
+            >
+            <h3 class="text-base font-bold text-text-ink/80">添加回忆</h3>
+          </div>
+          <span
+            class="text-xs text-primary font-bold bg-primary/10 px-2 py-1 rounded-lg"
+            >2 / 9</span
+          >
+        </div>
+        <div
+          class="no-scrollbar flex gap-4 overflow-x-auto px-2 pb-6 pt-2 -ml-2 w-[calc(100%+16px)]"
+        >
+          <button class="shrink-0 group relative w-24 h-24">
+            <div
+              class="absolute inset-0 bg-gray-50 rounded-2xl border-2 border-dashed border-primary/30 group-hover:border-primary group-hover:bg-primary/5 transition-all duration-300"
+            ></div>
+            <div
+              class="relative h-full flex flex-col items-center justify-center gap-1"
+            >
+              <span
+                class="material-symbols-outlined text-primary/40 text-3xl group-hover:scale-110 group-hover:text-primary transition-all"
+                >add_a_photo</span
+              >
+              <span
+                class="text-[10px] text-primary/40 font-bold group-hover:text-primary transition-colors"
+                >添加照片</span
+              >
+            </div>
+          </button>
+          <div
+            class="relative w-28 h-24 shrink-0 transform rotate-[-2deg] hover:rotate-0 transition-transform duration-300 group cursor-pointer"
+          >
+            <div
+              class="absolute -top-2.5 left-1/2 -translate-x-1/2 w-8 h-3 bg-secondary/50 rotate-[-1deg] z-20 shadow-sm opacity-80"
+            ></div>
+            <div
+              class="h-full w-full p-1.5 bg-white shadow-paper rounded-xl border border-gray-50"
+            >
+              <div
+                class="h-full w-full rounded-lg overflow-hidden bg-gray-100 relative"
+              >
+                <img
+                  alt="Memory 1"
+                  class="w-full h-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9X6_UDTCE9A6xc3ks_UWTEbnHSUxXXhkvPNYgbza6jU14-2QJkBFUJ4oa7yS_nyFmmnQGWHVjdT337Xge8mboB75UHSF7u9veS0y6oV6tOkXLkzDyqw5fR0mMs9_qpCGrHVU6ziUDIPmKcuLD44o_-g6K9kSlmonNYsx34bCJXo2CvT4Qeynml1uVooRBIYe1YVLs5pzgfa5ajaAz9BW-Vj39H2P2hiKQggYm6hThwlrh399Jjsi-CcTeFZpqB391nqWx3zm3bq4S"
+                />
+                <button
+                  class="absolute top-1 right-1 w-5 h-5 bg-black/50 hover:bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                >
+                  <span class="material-symbols-outlined text-[14px] font-bold"
+                    >close</span
+                  >
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            class="relative w-28 h-24 shrink-0 transform rotate-[1.5deg] hover:rotate-0 transition-transform duration-300 group cursor-pointer"
+          >
+            <div
+              class="absolute -top-2.5 left-1/2 -translate-x-1/2 w-8 h-3 bg-primary/40 rotate-[2deg] z-20 shadow-sm opacity-80"
+            ></div>
+            <div
+              class="h-full w-full p-1.5 bg-white shadow-paper rounded-xl border border-gray-50"
+            >
+              <div
+                class="h-full w-full rounded-lg overflow-hidden bg-gray-100 relative"
+              >
+                <img
+                  alt="Memory 2"
+                  class="w-full h-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOsNdOWqhsvTPnY7-WLnOz1fSHobluJPGyfKNlS8Xa9vL_rJHR4TwduoG1JeAJVvH_OItLSsOi71SRwBq40sF1UQOlG0YcXCmLvmjqqpCwy0TVhaF-i_M9E4C7mR7EC-5PLRV_x-1dOkEOIbWpbEhUB9Rqv7Sx_NsPQj7gStSGmmYdRvl1U-9SZsgGYRpMu6m4DMnRRc-KnhIapkzMLXkiry3EbLLKmHp9h3bdkDWUNNhA9hpHI1NZ2FNTUmsNP5SPu5DZWLZd9rHN"
+                />
+                <button
+                  class="absolute top-1 right-1 w-5 h-5 bg-black/50 hover:bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                >
+                  <span class="material-symbols-outlined text-[14px] font-bold"
+                    >close</span
+                  >
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <div
+      class="fixed bottom-0 left-0 w-full z-40 bg-gradient-to-t from-white via-white/95 to-transparent pt-12 pb-8 px-6 pointer-events-none"
+    >
+      <div class="flex items-center justify-center pointer-events-auto">
+        <button
+          class="group relative w-full max-w-xs transition-transform active:scale-95"
+        >
+          <div
+            class="absolute -inset-1 bg-primary/30 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          ></div>
+          <div
+            class="relative bg-primary hover:bg-primary-dark transition-colors h-14 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center gap-2 border-2 border-white/20"
+          >
+            <span
+              class="material-symbols-outlined text-white text-[28px] fill-current animate-bounce-slight"
+              >favorite</span
+            >
+            <span class="text-lg text-white font-bold tracking-widest pt-1"
+              >保存美好时光</span
+            >
+          </div>
+        </button>
+      </div>
+    </div>
+  </body>
+</html>

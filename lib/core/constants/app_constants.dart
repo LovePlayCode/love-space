@@ -8,7 +8,7 @@ class AppConstants {
 
   // 数据库
   static const String databaseName = 'love_space.db';
-  static const int databaseVersion = 7;
+  static const int databaseVersion = 8;
 
   // SharedPreferences Keys
   static const String keyIsFirstLaunch = 'is_first_launch';

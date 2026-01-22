@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>爱的日历 - 每日记录视图</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&amp;family=Varela+Round&amp;family=ZCOOL+KuaiLe&amp;family=Ma+Shan+Zheng&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FF9EAA", // Soft Pink
+              "primary-dark": "#FF758F", // Darker Pink
+              secondary: "#FFE5B4", // Peach/Cream
+              accent: "#FFD93D", // Pop Yellow
+              "background-light": "#FFFBF0", // Warm Cream Background
+              "background-dark": "#2D2424",
+              "surface-light": "#FFFFFF",
+              "surface-dark": "#3D3232",
+              "text-main": "#5D4037", // Brownish text (softer than black)
+              "text-sub": "#9E837D",
+              "border-cute": "#F8C8DC",
+              "cal-selected": "#FF9EAA",
+              "cal-today": "#FFD93D",
+            },
+            fontFamily: {
+              display: ["ZCOOL KuaiLe", "Fredoka", "cursive"], // Cute display font
+              body: [
+                "Varela Round",
+                "PingFang SC",
+                "Microsoft YaHei",
+                "sans-serif",
+              ], // Rounded body font
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+              lg: "1rem",
+              xl: "1.5rem",
+              "2xl": "2rem",
+              "3xl": "3rem",
+              full: "9999px",
+            },
+            boxShadow: {
+              cute: "0 6px 0px 0px rgba(255, 158, 170, 0.3)", // Chunky shadow
+              "cute-hover": "0 8px 0px 0px rgba(255, 158, 170, 0.5)",
+              card: "0 4px 15px -3px rgba(255, 158, 170, 0.15)",
+              "inner-cute": "inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .bg-doodle {
+        background-color: #fffbf0;
+        background-image: radial-gradient(#ff9eaa 1px, transparent 1px),
+          radial-gradient(#ff9eaa 1px, transparent 1px);
+        background-size: 40px 40px;
+        background-position: 0 0, 20px 20px;
+        opacity: 1;
+      }
+      .paper-texture {
+        background-image: linear-gradient(#f8f8f8 0.1em, transparent 0.1em),
+          linear-gradient(90deg, #f8f8f8 0.1em, transparent 0.1em);
+        background-size: 20px 20px;
+        background-color: #fffdf5;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-doodle dark:bg-background-dark font-body text-text-main dark:text-gray-100 antialiased selection:bg-primary selection:text-white"
+  >
+    <div
+      class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-28"
+    >
+      <div
+        class="px-6 pt-12 pb-4 flex items-center justify-between sticky top-0 z-30 bg-background-light/90 backdrop-blur-sm"
+      >
+        <h1 class="text-2xl font-display text-primary-dark drop-shadow-sm">
+          爱的日历
+        </h1>
+        <button
+          class="w-10 h-10 rounded-full bg-white shadow-sm border border-border-cute flex items-center justify-center text-primary-dark hover:bg-primary-dark hover:text-white transition-colors"
+        >
+          <span class="material-symbols-outlined">today</span>
+        </button>
+      </div>
+      <div class="px-4">
+        <div
+          class="bg-surface-light dark:bg-surface-dark rounded-3xl shadow-card border-2 border-white p-4"
+        >
+          <div class="flex items-center justify-between mb-4 px-2">
+            <button
+              class="p-2 text-text-sub hover:text-primary transition-colors"
+            >
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <span class="font-display text-lg text-text-main">2023年 10月</span>
+            <button
+              class="p-2 text-text-sub hover:text-primary transition-colors"
+            >
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+          <div class="grid grid-cols-7 gap-1 mb-2 text-center">
+            <div class="text-xs font-bold text-text-sub">日</div>
+            <div class="text-xs font-bold text-text-sub">一</div>
+            <div class="text-xs font-bold text-text-sub">二</div>
+            <div class="text-xs font-bold text-text-sub">三</div>
+            <div class="text-xs font-bold text-text-sub">四</div>
+            <div class="text-xs font-bold text-text-sub">五</div>
+            <div class="text-xs font-bold text-text-sub">六</div>
+          </div>
+          <div class="grid grid-cols-7 gap-1 text-center">
+            <div class="aspect-square flex items-center justify-center"></div>
+            <div class="aspect-square flex items-center justify-center"></div>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">1</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub relative"
+            >
+              <span class="text-sm">2</span>
+              <span
+                class="material-symbols-outlined text-[10px] text-primary absolute bottom-1"
+                >favorite</span
+              >
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">3</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub relative"
+            >
+              <span class="text-sm">4</span>
+              <span
+                class="material-symbols-outlined text-[10px] text-primary absolute bottom-1"
+                >favorite</span
+              >
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">5</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">6</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">7</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub relative"
+            >
+              <span class="text-sm">8</span>
+              <span
+                class="material-symbols-outlined text-[10px] text-primary absolute bottom-1"
+                >favorite</span
+              >
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">9</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">10</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">11</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-2xl bg-primary text-white shadow-cute transform scale-105 relative z-10"
+            >
+              <span class="text-sm font-bold">12</span>
+              <span
+                class="material-symbols-outlined text-[10px] text-white absolute bottom-1"
+                >favorite</span
+              >
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">13</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl bg-accent/20 text-text-main border-2 border-accent relative"
+            >
+              <span class="text-sm font-bold">14</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">15</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">16</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">17</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">18</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">19</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">20</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">21</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">22</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">23</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">24</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">25</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">26</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">27</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">28</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">29</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">30</span>
+            </button>
+            <button
+              class="aspect-square flex flex-col items-center justify-center rounded-xl hover:bg-primary/10 text-text-sub"
+            >
+              <span class="text-sm">31</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="px-4 mt-6">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="bg-primary/20 p-1.5 rounded-full">
+            <span class="material-symbols-outlined text-primary text-lg"
+              >history_edu</span
+            >
+          </div>
+          <h2 class="text-lg font-display text-text-main">10月12日 的回忆</h2>
+        </div>
+        <div
+          class="relative pl-4 border-l-2 border-dashed border-primary/30 space-y-6"
+        >
+          <div class="relative group">
+            <div
+              class="absolute -left-[23px] top-0 w-4 h-4 rounded-full bg-accent border-2 border-white shadow-sm flex items-center justify-center"
+            >
+              <span
+                class="material-symbols-outlined text-[10px] text-white font-bold"
+                >sunny</span
+              >
+            </div>
+            <div
+              class="bg-surface-light dark:bg-surface-dark p-5 rounded-2xl rounded-tl-none shadow-card border border-white relative overflow-hidden"
+            >
+              <div
+                class="absolute inset-0 paper-texture opacity-30 pointer-events-none"
+              ></div>
+              <div class="flex justify-between items-start relative z-10 mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl">😊</span>
+                  <span
+                    class="text-xs font-bold text-primary-dark bg-primary/10 px-2 py-0.5 rounded-full"
+                    >心情不错</span
+                  >
+                </div>
+                <span class="text-xs text-text-sub font-mono">14:30 PM</span>
+              </div>
+              <h3
+                class="font-display text-lg text-text-main mb-2 relative z-10"
+              >
+                第一次巴厘岛之旅 🌴
+              </h3>
+              <p
+                class="text-sm text-text-main/80 leading-relaxed relative z-10"
+              >
+                今天简直太棒了！我们终于到了梦寐以求的巴厘岛。海风吹在脸上的感觉好舒服，虽然飞机晚点了，但是看到这片海，一切都值得了。晚上的海鲜大餐超级好吃！
+              </p>
+            </div>
+            <button
+              class="absolute -right-2 -bottom-4 w-10 h-10 bg-accent hover:bg-yellow-400 text-white rounded-full shadow-cute flex items-center justify-center transform transition hover:scale-110 z-20"
+            >
+              <span class="material-symbols-outlined" style="font-size: 20px"
+                >edit</span
+              >
+            </button>
+          </div>
+          <div class="relative pb-4">
+            <div
+              class="absolute -left-[23px] top-0 w-4 h-4 rounded-full bg-primary border-2 border-white shadow-sm flex items-center justify-center"
+            >
+              <span
+                class="material-symbols-outlined text-[10px] text-white font-bold"
+                >photo_camera</span
+              >
+            </div>
+            <div class="pl-2">
+              <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                <div
+                  class="w-32 h-32 shrink-0 rounded-2xl overflow-hidden shadow-sm border-2 border-white relative group"
+                >
+                  <div
+                    class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                    style="
+                      background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCdepKJpVomcMFOQWhotuC1PanDF2-BmOQCG24xmKLXFEhqqP3KlQgYVob2pu03LS11us-w3qAyN5LnHkrXNRKBUTwM8O04D7GBZ-XvBj38mHSGepWxK0bEHHx3o10DdmKMsWov93iG3xj5yA9HturiukcIccCKH_tF-3B7MDblVQwRQqK00qfAWpm0WqwD6BFHlw9xQHLxds6MtpqbkR0RONBqWwgvqPcodi0aw1smoYr_4xMaiYWYHJEjVUPZAr2M6TIIAQAtmt2k');
+                    "
+                  ></div>
+                </div>
+                <div
+                  class="w-32 h-32 shrink-0 rounded-2xl overflow-hidden shadow-sm border-2 border-white relative group"
+                >
+                  <div
+                    class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                    style="
+                      background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC7mdIYS9yUZwwil_EtRzL8ycYWPH9gV8assrjod8zQxjHmtLYtth4jd7W2djbY72Zv9xHuwb9sCD3aMtxRBY54UOHqMijEPg18fHC2Jy9Pxz-929cNQ6xRYYQJkHzqq5APsmXNpCWaZwpHOVRm_OpQ0SRLzItcWzeZpEzmA4rRgPdHTgyR-AXrtP2HpN4xabO42CxlK1dysOMHNND0UtpE-eI29EK3uoPBkbOvVG7oNNauppSKZVAbMkn9aeLldwTPUEKNO_PQBJF_');
+                    "
+                  ></div>
+                </div>
+                <div
+                  class="w-32 h-32 shrink-0 rounded-2xl overflow-hidden shadow-sm border-2 border-white relative group flex items-center justify-center bg-gray-50"
+                >
+                  <div class="text-center">
+                    <span
+                      class="material-symbols-outlined text-gray-300 text-3xl"
+                      >add_a_photo</span
+                    >
+                    <p class="text-[10px] text-gray-400 mt-1">添加</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="fixed bottom-0 left-0 right-0 z-50 bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-xl border-t-2 border-primary/20 h-[85px] pb-6 rounded-t-3xl shadow-[0_-5px_20px_-5px_rgba(255,158,170,0.15)]"
+      >
+        <div class="flex items-center justify-around h-full">
+          <button
+            class="flex flex-col items-center justify-center gap-1 w-14 text-text-sub dark:text-gray-500 hover:text-primary dark:hover:text-primary-dark transition-colors"
+          >
+            <span class="material-symbols-outlined" style="font-size: 28px"
+              >cottage</span
+            >
+            <span class="text-[11px] font-medium font-display">首页</span>
+          </button>
+          <button
+            class="flex flex-col items-center justify-center gap-1 w-14 text-primary scale-110"
+          >
+            <span
+              class="material-symbols-outlined fill-current drop-shadow-sm"
+              style="font-variation-settings: 'FILL' 1; font-size: 28px"
+              >calendar_month</span
+            >
+            <span class="text-[11px] font-bold font-display">日历</span>
+          </button>
+          <button
+            class="flex flex-col items-center justify-center gap-1 w-14 text-text-sub dark:text-gray-500 hover:text-primary dark:hover:text-primary-dark transition-colors"
+          >
+            <span class="material-symbols-outlined" style="font-size: 28px"
+              >favorite</span
+            >
+            <span class="text-[11px] font-medium font-display">纪念日</span>
+          </button>
+          <button
+            class="flex flex-col items-center justify-center gap-1 w-14 text-text-sub dark:text-gray-500 hover:text-primary dark:hover:text-primary-dark transition-colors"
+          >
+            <span class="material-symbols-outlined" style="font-size: 28px"
+              >settings</span
+            >
+            <span class="text-[11px] font-medium font-display">设置</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>LoveSpace 时光详情 - 第一次巴厘岛之旅</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&amp;family=Varela+Round&amp;family=ZCOOL+KuaiLe&amp;family=Ma+Shan+Zheng&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FF9EAA", // Soft Pink
+              "primary-dark": "#FF758F", // Darker Pink
+              secondary: "#FFE5B4", // Peach/Cream
+              accent: "#FFD93D", // Pop Yellow
+              "background-light": "#FFFBF0", // Warm Cream Background
+              "background-dark": "#2D2424",
+              "surface-light": "#FFFFFF",
+              "surface-dark": "#3D3232",
+              "text-main": "#5D4037", // Brownish text (softer than black)
+              "text-sub": "#9E837D",
+              "border-cute": "#F8C8DC",
+            },
+            fontFamily: {
+              display: ["ZCOOL KuaiLe", "Fredoka", "cursive"], // Cute display font
+              body: [
+                "Varela Round",
+                "PingFang SC",
+                "Microsoft YaHei",
+                "sans-serif",
+              ], // Rounded body font
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+              lg: "1rem",
+              xl: "1.5rem",
+              "2xl": "2rem",
+              "3xl": "3rem",
+              full: "9999px",
+            },
+            boxShadow: {
+              cute: "0 6px 0px 0px rgba(255, 158, 170, 0.3)", // Chunky shadow
+              "cute-hover": "0 8px 0px 0px rgba(255, 158, 170, 0.5)",
+              card: "0 4px 15px -3px rgba(255, 158, 170, 0.15)",
+              scrapbook: "5px 5px 0px 0px rgba(0,0,0,0.1)",
+            },
+            backgroundImage: {
+              tape: "linear-gradient(-45deg, #ffffff 25%, #f0f0f0 25%, #f0f0f0 50%, #ffffff 50%, #ffffff 75%, #f0f0f0 75%, #f0f0f0 100%)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .bg-doodle {
+        background-color: #fffbf0;
+        background-image: radial-gradient(#ff9eaa 1px, transparent 1px),
+          radial-gradient(#ff9eaa 1px, transparent 1px);
+        background-size: 40px 40px;
+        background-position: 0 0, 20px 20px;
+        opacity: 1;
+      }
+      .washi-tape {
+        background-color: rgba(255, 255, 255, 0.6);
+        background-image: linear-gradient(
+          45deg,
+          rgba(255, 255, 255, 0.5) 25%,
+          transparent 25%,
+          transparent 50%,
+          rgba(255, 255, 255, 0.5) 50%,
+          rgba(255, 255, 255, 0.5) 75%,
+          transparent 75%,
+          transparent
+        );
+        background-size: 20px 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(2px);
+      }
+      .speech-bubble::before {
+        content: "";
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 0 12px 12px 12px;
+        border-style: solid;
+        border-color: transparent transparent #ffffff transparent;
+        filter: drop-shadow(0 -2px 1px rgba(0, 0, 0, 0.02));
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-doodle dark:bg-background-dark font-body text-text-main dark:text-gray-100 antialiased selection:bg-primary selection:text-white"
+  >
+    <div
+      class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden"
+    >
+      <div
+        class="fixed top-0 left-0 w-full z-50 p-4 pt-12 flex justify-between items-start pointer-events-none"
+      >
+        <button
+          class="pointer-events-auto group flex items-center justify-center w-12 h-12 rounded-full bg-white dark:bg-surface-dark border-2 border-primary/20 shadow-cute hover:shadow-cute-hover hover:scale-105 active:scale-95 transition-all duration-300"
+        >
+          <span
+            class="material-symbols-outlined text-primary group-hover:rotate-[-12deg] transition-transform"
+            style="font-variation-settings: 'FILL' 1"
+            >pets</span
+          >
+        </button>
+        <button
+          class="pointer-events-auto group flex items-center justify-center w-12 h-12 rounded-full bg-white/60 dark:bg-surface-dark/60 backdrop-blur-sm hover:bg-white transition-colors"
+        >
+          <span class="material-symbols-outlined text-text-sub">ios_share</span>
+        </button>
+      </div>
+      <main
+        class="flex-1 flex flex-col items-center justify-center px-6 pt-20 pb-10 w-full max-w-md mx-auto"
+      >
+        <div class="relative group cursor-pointer perspective-1000 mb-8">
+          <div
+            class="absolute -top-3 left-1/2 -translate-x-1/2 w-32 h-8 bg-primary/20 washi-tape rotate-1 z-20 opacity-80 rounded-sm"
+          ></div>
+          <div
+            class="relative bg-white dark:bg-surface-dark p-3 pb-12 rounded-[2rem] shadow-xl border border-white/50 rotate-2 group-hover:rotate-0 transition-all duration-500 ease-out-back"
+          >
+            <div
+              class="relative overflow-hidden rounded-[1.5rem] bg-gray-100 shadow-inner"
+            >
+              <img
+                alt="Couple walking on a beach during sunset"
+                class="w-full h-auto object-cover aspect-[3/4] select-none pointer-events-none"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdepKJpVomcMFOQWhotuC1PanDF2-BmOQCG24xmKLXFEhqqP3KlQgYVob2pu03LS11us-w3qAyN5LnHkrXNRKBUTwM8O04D7GBZ-XvBj38mHSGepWxK0bEHHx3o10DdmKMsWov93iG3xj5yA9HturiukcIccCKH_tF-3B7MDblVQwRQqK00qfAWpm0WqwD6BFHlw9xQHLxds6MtpqbkR0RONBqWwgvqPcodi0aw1smoYr_4xMaiYWYHJEjVUPZAr2M6TIIAQAtmt2k"
+              />
+              <div
+                class="absolute inset-0 ring-1 ring-black/5 rounded-[1.5rem]"
+              ></div>
+            </div>
+            <div class="absolute bottom-4 right-6 transform -rotate-2">
+              <span
+                class="font-display text-text-sub/60 text-sm tracking-widest"
+                >LoveSpace</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="relative w-full">
+          <div
+            class="speech-bubble bg-white dark:bg-surface-dark rounded-[2rem] p-6 shadow-card border-2 border-white/40 dark:border-white/5 flex flex-col items-center text-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700"
+          >
+            <div
+              class="inline-flex items-center gap-1.5 bg-secondary/30 text-text-main text-xs font-bold px-3 py-1 rounded-full mb-1"
+            >
+              <span class="material-symbols-outlined text-sm"
+                >calendar_today</span
+              >
+              2022年10月12日
+            </div>
+            <h1
+              class="text-2xl font-display font-bold text-text-main dark:text-primary-dark"
+            >
+              第一次巴厘岛之旅 🌴
+            </h1>
+            <p class="text-text-sub text-base leading-relaxed px-2 font-medium">
+              绝美的日落，海风轻轻吹过脸庞。<br />只要和你在一起，每一刻都是风景。
+            </p>
+            <div class="w-16 h-1 bg-primary/10 rounded-full my-2"></div>
+            <div class="flex items-center justify-center gap-6 w-full pt-1">
+              <button class="flex flex-col items-center gap-1 group">
+                <div
+                  class="w-14 h-14 flex items-center justify-center rounded-2xl bg-accent/10 text-accent hover:bg-accent hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-md"
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-variation-settings: 'FILL' 0"
+                    >edit</span
+                  >
+                </div>
+                <span
+                  class="text-xs font-bold text-text-sub/70 group-hover:text-accent transition-colors"
+                  >编辑</span
+                >
+              </button>
+              <button class="flex flex-col items-center gap-1 group">
+                <div
+                  class="w-14 h-14 flex items-center justify-center rounded-2xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-300 shadow-sm group-hover:shadow-md"
+                >
+                  <span class="material-symbols-outlined">delete</span>
+                </div>
+                <span
+                  class="text-xs font-bold text-text-sub/70 group-hover:text-primary transition-colors"
+                  >删除</span
+                >
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

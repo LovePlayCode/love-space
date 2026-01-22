@@ -468,7 +468,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final dateStr = DateFormat('M月dd日').format(item.takenDateTime);
 
     return GestureDetector(
-      onTap: () => context.push('${AppRoutes.album}/detail/${item.id}'),
+      onTap: () => context.push('/moment/${item.id}'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(

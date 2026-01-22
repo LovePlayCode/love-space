@@ -2,11 +2,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:photo_manager/photo_manager.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
 import '../../models/daily_log.dart';
 import '../../providers/calendar_provider.dart';
 import '../../providers/todo_provider.dart';
@@ -20,8 +18,7 @@ class CalendarScreen extends ConsumerStatefulWidget {
 }
 
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
-  CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime _focusedDay = DateTime.now();
+  DateTime _focusedMonth = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -37,45 +34,105 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('爱的日历'),
-        backgroundColor: AppColors.background,
-        actions: [
-          IconButton(
-            onPressed: () {
-              ref.read(selectedDateProvider.notifier).selectToday();
-              setState(() => _focusedDay = DateTime.now());
-            },
-            icon: const Icon(Icons.today_rounded),
-          ),
-        ],
-      ),
-      body: Column(
+      body: Stack(
         children: [
-          // 日历
-          _buildCalendar(selectedDate, markersAsync),
-          // 分割线
-          const Divider(height: 1),
-          // 选中日期的内容
-          Expanded(
-            child: _buildDayContent(
-              selectedDate,
-              dateLog,
-              dateMediaAsync,
-              todosAsync,
-            ),
+          // 背景点点图案
+          const _DoodleBackground(),
+          // 主内容
+          Column(
+            children: [
+              // 固定的顶部标题栏
+              _buildHeader(context),
+              // 可滚动的内容
+              Expanded(
+                child: CustomScrollView(
+                  slivers: [
+                    // 日历卡片
+                    SliverToBoxAdapter(
+                      child: _buildCalendarCard(selectedDate, markersAsync),
+                    ),
+                    // 选中日期的回忆
+                    SliverToBoxAdapter(
+                      child: _buildDayMemories(
+                        selectedDate,
+                        dateLog,
+                        dateMediaAsync,
+                        todosAsync,
+                      ),
+                    ),
+                    // 底部间距
+                    const SliverToBoxAdapter(child: SizedBox(height: 120)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToDayDetail(selectedDate),
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.edit_rounded, color: AppColors.textWhite),
       ),
     );
   }
 
-  Widget _buildCalendar(
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        24,
+        MediaQuery.of(context).padding.top + 12,
+        24,
+        16,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '爱的日历',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primaryDark,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              ref.read(selectedDateProvider.notifier).selectToday();
+              setState(() => _focusedMonth = DateTime.now());
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.backgroundWhite,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.borderCute),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.today_rounded,
+                  color: AppColors.primaryDark,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCalendarCard(
     DateTime selectedDate,
     AsyncValue<Set<String>> markersAsync,
   ) {
@@ -85,170 +142,638 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
 
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadowColorLight,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: AppColors.backgroundWhite,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: AppColors.cuteShadow,
       ),
-      child: TableCalendar(
-        firstDay: DateTime(2000),
-        lastDay: DateTime(2100),
-        focusedDay: _focusedDay,
-        selectedDayPredicate: (day) => isSameDay(selectedDate, day),
-        calendarFormat: _calendarFormat,
-        startingDayOfWeek: StartingDayOfWeek.monday,
-        locale: 'zh_CN',
-        headerStyle: HeaderStyle(
-          formatButtonVisible: false,
-          titleCentered: true,
-          titleTextStyle: AppTextStyles.subtitle1,
-          leftChevronIcon: const Icon(
-            Icons.chevron_left_rounded,
-            color: AppColors.primary,
-          ),
-          rightChevronIcon: const Icon(
-            Icons.chevron_right_rounded,
-            color: AppColors.primary,
-          ),
-        ),
-        daysOfWeekStyle: const DaysOfWeekStyle(
-          weekdayStyle: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-          weekendStyle: TextStyle(
-            color: AppColors.primary,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        calendarStyle: CalendarStyle(
-          outsideDaysVisible: false,
-          todayDecoration: BoxDecoration(
-            color: AppColors.primaryLighter,
-            shape: BoxShape.circle,
-          ),
-          todayTextStyle: const TextStyle(
-            color: AppColors.primary,
-            fontWeight: FontWeight.w600,
-          ),
-          selectedDecoration: const BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
-          ),
-          selectedTextStyle: const TextStyle(
-            color: AppColors.textWhite,
-            fontWeight: FontWeight.w600,
-          ),
-          defaultTextStyle: const TextStyle(color: AppColors.textPrimary),
-          weekendTextStyle: const TextStyle(color: AppColors.primary),
-          markerDecoration: const BoxDecoration(
-            color: AppColors.primary,
-            shape: BoxShape.circle,
-          ),
-          markersMaxCount: 1,
-          markerSize: 6,
-          markerMargin: const EdgeInsets.only(top: 6),
-        ),
-        eventLoader: (day) {
-          final dateStr = DailyLog.formatDateStr(day);
-          return markers.contains(dateStr) ? [true] : [];
-        },
-        onDaySelected: (selectedDay, focusedDay) {
-          ref.read(selectedDateProvider.notifier).selectDate(selectedDay);
-          setState(() => _focusedDay = focusedDay);
-        },
-        onFormatChanged: (format) {
-          setState(() => _calendarFormat = format);
-        },
-        onPageChanged: (focusedDay) {
-          setState(() => _focusedDay = focusedDay);
-        },
+      child: Column(
+        children: [
+          // 月份切换
+          _buildMonthHeader(),
+          const SizedBox(height: 16),
+          // 星期标题
+          _buildWeekdayHeader(),
+          const SizedBox(height: 8),
+          // 日期网格
+          _buildDaysGrid(selectedDate, markers),
+        ],
       ),
     );
   }
 
-  Widget _buildDayContent(
+  Widget _buildMonthHeader() {
+    final monthStr = DateFormat('yyyy年 M月', 'zh_CN').format(_focusedMonth);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        GestureDetector(
+          onTap: () => _changeMonth(-1),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Icon(
+              Icons.chevron_left_rounded,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+        Text(
+          monthStr,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        GestureDetector(
+          onTap: () => _changeMonth(1),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _changeMonth(int delta) {
+    setState(() {
+      _focusedMonth = DateTime(
+        _focusedMonth.year,
+        _focusedMonth.month + delta,
+      );
+    });
+  }
+
+  Widget _buildWeekdayHeader() {
+    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+
+    return Row(
+      children: weekdays.map((day) {
+        return Expanded(
+          child: Center(
+            child: Text(
+              day,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildDaysGrid(DateTime selectedDate, Set<String> markers) {
+    final firstDayOfMonth = DateTime(_focusedMonth.year, _focusedMonth.month, 1);
+    final lastDayOfMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0);
+    final firstWeekday = firstDayOfMonth.weekday % 7; // 0=Sunday
+    final daysInMonth = lastDayOfMonth.day;
+    final today = DateTime.now();
+
+    final List<Widget> dayWidgets = [];
+
+    // 空白占位
+    for (int i = 0; i < firstWeekday; i++) {
+      dayWidgets.add(const SizedBox());
+    }
+
+    // 日期
+    for (int day = 1; day <= daysInMonth; day++) {
+      final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
+      final dateStr = DailyLog.formatDateStr(date);
+      final isSelected = _isSameDay(date, selectedDate);
+      final isToday = _isSameDay(date, today);
+      final hasMarker = markers.contains(dateStr);
+
+      dayWidgets.add(
+        _buildDayCell(day, date, isSelected, isToday, hasMarker),
+      );
+    }
+
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 7,
+      childAspectRatio: 1,
+      mainAxisSpacing: 4,
+      crossAxisSpacing: 4,
+      children: dayWidgets,
+    );
+  }
+
+  Widget _buildDayCell(
+    int day,
+    DateTime date,
+    bool isSelected,
+    bool isToday,
+    bool hasMarker,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        ref.read(selectedDateProvider.notifier).selectDate(date);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary
+              : isToday
+                  ? AppColors.accent.withValues(alpha: 0.2)
+                  : Colors.transparent,
+          borderRadius: BorderRadius.circular(isSelected ? 16 : 12),
+          border: isToday && !isSelected
+              ? Border.all(color: AppColors.accent, width: 2)
+              : null,
+          boxShadow: isSelected ? AppColors.cuteChunkyShadow : null,
+        ),
+        transform: isSelected ? Matrix4.identity().scaled(1.05) : null,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // 日期数字
+            Text(
+              '$day',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: isSelected || isToday ? FontWeight.w700 : FontWeight.w400,
+                color: isSelected
+                    ? AppColors.textWhite
+                    : isToday
+                        ? AppColors.textPrimary
+                        : AppColors.textSecondary,
+              ),
+            ),
+            // 有记录标记 - 爱心图标
+            if (hasMarker)
+              Positioned(
+                bottom: 4,
+                child: Icon(
+                  Icons.favorite_rounded,
+                  size: 10,
+                  color: isSelected ? AppColors.textWhite : AppColors.primary,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  Widget _buildDayMemories(
     DateTime selectedDate,
     DailyLog? log,
     AsyncValue<List> mediaAsync,
     AsyncValue<List<TodoItem>> todosAsync,
   ) {
-    final dateStr = DateFormat('M月d日 EEEE', 'zh_CN').format(selectedDate);
-    final isToday = isSameDay(selectedDate, DateTime.now());
+    final dateStr = DateFormat('M月d日', 'zh_CN').format(selectedDate);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 日期标题
+          const SizedBox(height: 24),
+          // 标题
           Row(
             children: [
-              Text(dateStr, style: AppTextStyles.subtitle1),
-              if (isToday)
-                Container(
-                  margin: const EdgeInsets.only(left: 8),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text(
-                    '今天',
-                    style: TextStyle(
-                      color: AppColors.textWhite,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
                 ),
+                child: const Icon(
+                  Icons.history_edu_rounded,
+                  color: AppColors.primary,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '$dateStr 的回忆',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 16),
-          // 心情
-          if (log?.hasMood == true)
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
+          const SizedBox(height: 12),
+          // 时间线内容
+          _buildTimeline(selectedDate, log, mediaAsync, todosAsync),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeline(
+    DateTime selectedDate,
+    DailyLog? log,
+    AsyncValue<List> mediaAsync,
+    AsyncValue<List<TodoItem>> todosAsync,
+  ) {
+    final hasLog = log != null && (log.hasMood || log.hasContent);
+    final hasMedia = mediaAsync.maybeWhen(
+      data: (items) => items.isNotEmpty,
+      orElse: () => false,
+    );
+    final hasTodos = todosAsync.maybeWhen(
+      data: (todos) => todos.isNotEmpty,
+      orElse: () => false,
+    );
+
+    if (!hasLog && !hasMedia && !hasTodos) {
+      return _buildEmptyState(selectedDate);
+    }
+
+    return Container(
+      padding: const EdgeInsets.only(left: 16),
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            width: 2,
+            style: BorderStyle.solid,
+          ),
+        ),
+      ),
+      child: Column(
+        children: [
+          // 日记卡片
+          if (hasLog)
+            _buildDiaryCard(log!, selectedDate),
+          // 照片区域
+          mediaAsync.when(
+            loading: () => const SizedBox(),
+            error: (_, __) => const SizedBox(),
+            data: (items) {
+              if (items.isEmpty) return const SizedBox();
+              return _buildPhotoSection(items.cast<AssetEntity>());
+            },
+          ),
+          // 待办事项
+          if (hasTodos)
+            _buildTodoSection(todosAsync, DailyLog.formatDateStr(selectedDate)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(DateTime selectedDate) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      margin: const EdgeInsets.only(top: 8),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundWhite,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.cuteShadow,
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.wb_sunny_rounded,
+            size: 48,
+            color: AppColors.primary.withValues(alpha: 0.3),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            '这一天还没有记录',
+            style: TextStyle(
+              color: AppColors.textHint,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: () => _navigateToDayDetail(selectedDate),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: Row(
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(log!.mood!, style: const TextStyle(fontSize: 24)),
-                  const SizedBox(width: 12),
-                  const Text(
-                    '今日心情',
+                  Icon(Icons.add_rounded, color: Colors.white, size: 18),
+                  SizedBox(width: 4),
+                  Text(
+                    '添加记录',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
             ),
-          // 日记内容
-          if (log?.hasContent == true)
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDiaryCard(DailyLog log, DateTime selectedDate) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // 时间线节点
+        Positioned(
+          left: -23,
+          top: 0,
+          child: Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              color: AppColors.accent,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+            child: const Center(
+              child: Icon(Icons.wb_sunny_rounded, size: 8, color: Colors.white),
+            ),
+          ),
+        ),
+        // 日记卡片
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 24),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.backgroundWhite,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.zero,
+              topRight: Radius.circular(16),
+              bottomLeft: Radius.circular(16),
+              bottomRight: Radius.circular(16),
+            ),
+            border: Border.all(color: Colors.white),
+            boxShadow: AppColors.cuteShadow,
+          ),
+          child: Stack(
+            children: [
+              // 纸张纹理背景
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _PaperTexturePainter(),
+                ),
+              ),
+              // 内容
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 心情和时间
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          if (log.hasMood)
+                            Text(log.mood!, style: const TextStyle(fontSize: 24)),
+                          if (log.hasMood) const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              log.hasMood ? '心情不错' : '写下心情',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primaryDark,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        DateFormat('HH:mm').format(
+                          DateTime.fromMillisecondsSinceEpoch(log.updatedAt),
+                        ),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (log.hasContent) ...[
+                    const SizedBox(height: 12),
+                    // 标题
+                    Text(
+                      log.content!.split('\n').first,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    if (log.content!.contains('\n')) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        log.content!.split('\n').skip(1).join('\n'),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textPrimary.withValues(alpha: 0.8),
+                          height: 1.5,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+        // 编辑按钮
+        Positioned(
+          right: -8,
+          bottom: 8,
+          child: GestureDetector(
+            onTap: () => _navigateToDayDetail(selectedDate),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.accent,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.accent.withValues(alpha: 0.3),
+                    blurRadius: 0,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: Icon(Icons.edit_rounded, color: Colors.white, size: 20),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPhotoSection(List<AssetEntity> mediaItems) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // 时间线节点
+        Positioned(
+          left: -23,
+          top: 0,
+          child: Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+            child: const Center(
+              child: Icon(Icons.photo_camera_rounded, size: 8, color: Colors.white),
+            ),
+          ),
+        ),
+        // 照片列表
+        Padding(
+          padding: const EdgeInsets.only(left: 8, bottom: 16),
+          child: SizedBox(
+            height: 128,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: mediaItems.length + 1, // +1 for add button
+              itemBuilder: (context, index) {
+                if (index == mediaItems.length) {
+                  // 添加按钮
+                  return Container(
+                    width: 128,
+                    height: 128,
+                    margin: const EdgeInsets.only(right: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundPink,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.add_a_photo_rounded,
+                          color: AppColors.textHint.withValues(alpha: 0.5),
+                          size: 28,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '添加',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textHint.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final asset = mediaItems[index];
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: _AssetThumbnail(
+                    asset: asset,
+                    onTap: () => context.push('/album/photo/${asset.id}'),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTodoSection(
+    AsyncValue<List<TodoItem>> todosAsync,
+    String dateStr,
+  ) {
+    return todosAsync.when(
+      loading: () => const SizedBox(),
+      error: (_, __) => const SizedBox(),
+      data: (todos) {
+        if (todos.isEmpty) return const SizedBox();
+
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // 时间线节点
+            Positioned(
+              left: -23,
+              top: 0,
+              child: Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: AppColors.success,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(Icons.checklist_rounded, size: 8, color: Colors.white),
+                ),
+              ),
+            ),
+            // 待办卡片
             Container(
               width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 12),
+              margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.backgroundWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white),
+                boxShadow: AppColors.cuteShadow,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,129 +781,33 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   const Row(
                     children: [
                       Icon(
-                        Icons.edit_note_rounded,
-                        color: AppColors.primary,
-                        size: 20,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        '日记',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(log!.content!, style: AppTextStyles.body2),
-                ],
-              ),
-            ),
-          // 待办事项预览
-          _buildTodoPreview(todosAsync, DailyLog.formatDateStr(selectedDate)),
-          // 照片
-          mediaAsync.when(
-            loading: () => const SizedBox(),
-            error: (_, _) => const SizedBox(),
-            data: (mediaItems) {
-              if (mediaItems.isEmpty) {
-                if (log == null || log.isEmpty) {
-                  return _buildEmptyDay(todosAsync);
-                }
-                return const SizedBox();
-              }
-              return _buildMediaGrid(mediaItems.cast<AssetEntity>());
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTodoPreview(
-    AsyncValue<List<TodoItem>> todosAsync,
-    String dateStr,
-  ) {
-    return todosAsync.when(
-      loading: () => const SizedBox(),
-      error: (_, _) => const SizedBox(),
-      data: (todos) {
-        final completedCount = todos.where((t) => t.isCompleted).length;
-        final totalCount = todos.length;
-
-        return Container(
-          width: double.infinity,
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.cardBackground,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 标题栏
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Row(
-                    children: [
-                      Icon(
                         Icons.checklist_rounded,
                         color: AppColors.primary,
-                        size: 20,
+                        size: 18,
                       ),
                       SizedBox(width: 8),
                       Text(
                         '今日恋爱计划',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
                           fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
                   ),
-                  if (totalCount > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: completedCount == totalCount
-                            ? AppColors.success.withValues(alpha: 0.1)
-                            : AppColors.primaryLighter,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '$completedCount/$totalCount',
-                        style: TextStyle(
-                          color: completedCount == totalCount
-                              ? AppColors.success
-                              : AppColors.primary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+                  const SizedBox(height: 12),
+                  ...todos.map((todo) => _buildTodoItem(todo, dateStr)),
+                  _buildQuickAddInput(dateStr),
                 ],
               ),
-              const SizedBox(height: 12),
-              // 待办列表（可交互）
-              ...todos.map((todo) => _buildTodoItem(todo, dateStr)),
-              // 快速添加输入框
-              _buildQuickAddInput(dateStr),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
   }
 
-  /// 构建单个待办项（支持点击切换状态和左滑删除）
   Widget _buildTodoItem(TodoItem todo, String dateStr) {
     return Dismissible(
       key: Key('todo_${todo.id}'),
@@ -399,6 +828,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               builder: (context) => AlertDialog(
                 title: const Text('删除待办'),
                 content: const Text('确定要删除这条待办事项吗？'),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(false),
@@ -406,10 +838,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text(
-                      '删除',
-                      style: TextStyle(color: AppColors.error),
-                    ),
+                    child: const Text('删除', style: TextStyle(color: AppColors.error)),
                   ),
                 ],
               ),
@@ -428,17 +857,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           margin: const EdgeInsets.only(bottom: 4),
           child: Row(
             children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                child: Icon(
-                  todo.isCompleted
-                      ? Icons.check_circle_rounded
-                      : Icons.radio_button_unchecked,
-                  size: 18,
-                  color: todo.isCompleted
-                      ? AppColors.success
-                      : AppColors.textHint,
-                ),
+              Icon(
+                todo.isCompleted
+                    ? Icons.check_circle_rounded
+                    : Icons.radio_button_unchecked,
+                size: 18,
+                color: todo.isCompleted ? AppColors.success : AppColors.textHint,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -449,9 +873,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     color: todo.isCompleted
                         ? AppColors.textHint
                         : AppColors.textPrimary,
-                    decoration: todo.isCompleted
-                        ? TextDecoration.lineThrough
-                        : null,
+                    decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -464,7 +886,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
   }
 
-  /// 快速添加待办输入框
   Widget _buildQuickAddInput(String dateStr) {
     return Container(
       margin: const EdgeInsets.only(top: 8),
@@ -473,20 +894,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         decoration: InputDecoration(
           hintText: '添加待办...',
           hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 13),
-          prefixIcon: const Icon(
-            Icons.add_rounded,
-            color: AppColors.textHint,
-            size: 18,
-          ),
-          prefixIconConstraints: const BoxConstraints(
-            minWidth: 36,
-            minHeight: 36,
-          ),
+          prefixIcon: const Icon(Icons.add_rounded, color: AppColors.textHint, size: 18),
+          prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 12,
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           filled: true,
           fillColor: AppColors.backgroundPink,
           border: OutlineInputBorder(
@@ -514,100 +925,77 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     );
   }
 
-  Widget _buildEmptyDay(AsyncValue<List<TodoItem>> todosAsync) {
-    // 如果有待办事项，不显示空状态
-    final hasTodos = todosAsync.maybeWhen(
-      data: (todos) => todos.isNotEmpty,
-      orElse: () => false,
-    );
-    if (hasTodos) return const SizedBox();
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.wb_sunny_rounded,
-            size: 48,
-            color: AppColors.primaryLighter,
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            '这一天还没有记录',
-            style: TextStyle(color: AppColors.textHint, fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          TextButton.icon(
-            onPressed: () =>
-                _navigateToDayDetail(ref.read(selectedDateProvider)),
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            icon: const Icon(Icons.add_rounded, size: 18),
-            label: const Text('添加记录'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMediaGrid(List<AssetEntity> mediaItems) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Row(
-          children: [
-            Icon(
-              Icons.photo_library_rounded,
-              color: AppColors.primary,
-              size: 20,
-            ),
-            SizedBox(width: 8),
-            Text(
-              '照片',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-          ),
-          itemCount: mediaItems.length,
-          itemBuilder: (context, index) {
-            final asset = mediaItems[index];
-            return _AssetThumbnail(
-              asset: asset,
-              onTap: () => context.push('/album/photo/${asset.id}'),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
   void _navigateToDayDetail(DateTime date) {
     final dateStr = DailyLog.formatDateStr(date);
     context.push('/calendar/day/$dateStr');
   }
+}
+
+/// 背景点点图案
+class _DoodleBackground extends StatelessWidget {
+  const _DoodleBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: CustomPaint(
+        painter: _DoodlePainter(),
+      ),
+    );
+  }
+}
+
+class _DoodlePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.primary.withValues(alpha: 0.08)
+      ..style = PaintingStyle.fill;
+
+    const spacing = 40.0;
+    const dotRadius = 1.5;
+
+    for (double x = 0; x < size.width; x += spacing) {
+      for (double y = 0; y < size.height; y += spacing) {
+        canvas.drawCircle(Offset(x, y), dotRadius, paint);
+      }
+    }
+
+    for (double x = spacing / 2; x < size.width; x += spacing) {
+      for (double y = spacing / 2; y < size.height; y += spacing) {
+        canvas.drawCircle(Offset(x, y), dotRadius, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// 纸张纹理绘制器
+class _PaperTexturePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.grey.withValues(alpha: 0.03)
+      ..strokeWidth = 0.5
+      ..style = PaintingStyle.stroke;
+
+    const spacing = 20.0;
+
+    // 横线
+    for (double y = 0; y < size.height; y += spacing) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+
+    // 竖线
+    for (double x = 0; x < size.width; x += spacing) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// 资源缩略图组件
@@ -648,9 +1036,19 @@ class _AssetThumbnailState extends State<_AssetThumbnail> {
     return GestureDetector(
       onTap: widget.onTap,
       child: Container(
+        width: 128,
+        height: 128,
         decoration: BoxDecoration(
           color: AppColors.backgroundPink,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         clipBehavior: Clip.antiAlias,
         child: _thumbnailData != null

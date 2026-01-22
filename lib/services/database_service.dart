@@ -128,6 +128,18 @@ class DatabaseService {
     ''');
     await db.execute('CREATE INDEX idx_system_asset_tags_asset_id ON system_asset_tags(asset_id)');
     await db.execute('CREATE INDEX idx_system_asset_tags_tag_id ON system_asset_tags(tag_id)');
+
+    // 创建日期-照片关联表（将系统相册照片关联到特定日期）
+    await db.execute('''
+      CREATE TABLE date_assets (
+        date_str TEXT NOT NULL,
+        asset_id TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        PRIMARY KEY (date_str, asset_id)
+      )
+    ''');
+    await db.execute('CREATE INDEX idx_date_assets_date_str ON date_assets(date_str)');
+    await db.execute('CREATE INDEX idx_date_assets_asset_id ON date_assets(asset_id)');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -192,6 +204,19 @@ class DatabaseService {
       ''');
       await db.execute('CREATE INDEX IF NOT EXISTS idx_system_asset_tags_asset_id ON system_asset_tags(asset_id)');
       await db.execute('CREATE INDEX IF NOT EXISTS idx_system_asset_tags_tag_id ON system_asset_tags(tag_id)');
+    }
+    if (oldVersion < 8) {
+      // 添加日期-照片关联表
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS date_assets (
+          date_str TEXT NOT NULL,
+          asset_id TEXT NOT NULL,
+          created_at INTEGER NOT NULL,
+          PRIMARY KEY (date_str, asset_id)
+        )
+      ''');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_date_assets_date_str ON date_assets(date_str)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_date_assets_asset_id ON date_assets(asset_id)');
     }
   }
 
@@ -688,6 +713,73 @@ class DatabaseService {
       [startDate, endDate],
     );
     return {for (var map in maps) map['date_str'] as String: map['count'] as int};
+  }
+
+  // ==================== DateAsset 日期-照片关联操作 ====================
+
+  /// 添加照片到指定日期
+  Future<void> addAssetToDate(String dateStr, String assetId) async {
+    final db = await database;
+    await db.insert(
+      'date_assets',
+      {
+        'date_str': dateStr,
+        'asset_id': assetId,
+        'created_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  /// 批量添加照片到指定日期
+  Future<void> addAssetsToDate(String dateStr, List<String> assetIds) async {
+    final db = await database;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    await db.transaction((txn) async {
+      for (final assetId in assetIds) {
+        await txn.insert(
+          'date_assets',
+          {
+            'date_str': dateStr,
+            'asset_id': assetId,
+            'created_at': now,
+          },
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+    });
+  }
+
+  /// 从指定日期移除照片
+  Future<void> removeAssetFromDate(String dateStr, String assetId) async {
+    final db = await database;
+    await db.delete(
+      'date_assets',
+      where: 'date_str = ? AND asset_id = ?',
+      whereArgs: [dateStr, assetId],
+    );
+  }
+
+  /// 获取指定日期的所有照片 ID
+  Future<List<String>> getAssetIdsByDate(String dateStr) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'date_assets',
+      columns: ['asset_id'],
+      where: 'date_str = ?',
+      whereArgs: [dateStr],
+      orderBy: 'created_at DESC',
+    );
+    return maps.map((map) => map['asset_id'] as String).toList();
+  }
+
+  /// 获取有照片关联的日期集合
+  Future<Set<String>> getDateAssetDates() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      'SELECT DISTINCT date_str FROM date_assets',
+    );
+    return maps.map((map) => map['date_str'] as String).toSet();
   }
 
   // ==================== 通用操作（原有）====================
