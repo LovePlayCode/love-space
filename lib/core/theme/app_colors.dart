@@ -5,27 +5,54 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // 主色调 - 可爱粉色系
-  static const Color primary = Color(0xFFFF9EAA);      // Soft Pink
+  // 主色调 - 可爱粉色系 (demo8: #FF8FA3)
+  static const Color primary = Color(0xFFFF8FA3);      // Soft Pink
   static const Color primaryLight = Color(0xFFFFB8C1);
   static const Color primaryLighter = Color(0xFFFFC8D0);
-  static const Color primaryDark = Color(0xFFFF758F);  // Darker Pink
+  static const Color primaryDark = Color(0xFFE86F85);  // Darker Pink
 
-  // 辅助色
-  static const Color secondary = Color(0xFFFFE5B4);    // Peach/Cream
-  static const Color accent = Color(0xFFFFD93D);       // Pop Yellow
+  // 辅助色 (demo8)
+  static const Color secondary = Color(0xFFFFD6A5);    // Peach/Cream
+  static const Color accent = Color(0xFFA0E7E5);       // Teal accent
 
-  // 背景色
-  static const Color background = Color(0xFFFFFBF0);   // Warm Cream Background
+  // 背景色 (demo8: #FFF9F5)
+  static const Color background = Color(0xFFFFF9F5);   // Warm Cream Background
   static const Color backgroundWhite = Color(0xFFFFFFFF);
   static const Color backgroundPink = Color(0xFFFFF0F3);
   static const Color cardBackground = Color(0xFFFFFFFF);
+  static const Color backgroundDark = Color(0xFF2D2424);
+  static const Color surfaceDark = Color(0xFF3B3030);
 
-  // 文字颜色
-  static const Color textPrimary = Color(0xFF5D4037);  // Brownish text (softer)
-  static const Color textSecondary = Color(0xFF9E837D);
+  // 文字颜色 (demo8: text-primary: #4A403A, text-secondary: #9C8E88)
+  static const Color textPrimary = Color(0xFF4A403A);  // Brownish text (softer)
+  static const Color textSecondary = Color(0xFF9C8E88);
   static const Color textHint = Color(0xFFB8A8A3);
   static const Color textWhite = Color(0xFFFFFFFF);
+
+  // demo8 特有颜色
+  static const Color blue100 = Color(0xFFDBEAFE);
+  static const Color blue200 = Color(0xFFBFDBFE);
+  static const Color blue400 = Color(0xFF60A5FA);
+  static const Color blue500 = Color(0xFF3B82F6);
+  static const Color pink100 = Color(0xFFFCE7F3);
+  static const Color pink200 = Color(0xFFFBCFE8);
+  static const Color pink400 = Color(0xFFF472B6);
+  static const Color red100 = Color(0xFFFEE2E2);
+  static const Color red500 = Color(0xFFEF4444);
+  static const Color green100 = Color(0xFFDCFCE7);
+  static const Color green600 = Color(0xFF16A34A);
+  static const Color yellow50 = Color(0xFFFEFCE8);
+  static const Color yellow100 = Color(0xFFFEF3C7);
+  static const Color yellow300 = Color(0xFFFDE047);
+  static const Color yellow600 = Color(0xFFCA8A04);
+  static const Color orange100 = Color(0xFFFFEDD5);
+  static const Color orange500 = Color(0xFFF97316);
+  static const Color gray100 = Color(0xFFF3F4F6);
+  static const Color gray200 = Color(0xFFE5E7EB);
+  static const Color gray300 = Color(0xFFD1D5DB);
+  static const Color gray400 = Color(0xFF9CA3AF);
+  static const Color gray500 = Color(0xFF6B7280);
+  static const Color gray800 = Color(0xFF1F2937);
 
   // 功能色
   static const Color success = Color(0xFF52C41A);

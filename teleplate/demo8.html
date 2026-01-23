@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      name="viewport"
+    />
+    <title>LoveSpace - 设置与档案</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FF8FA3",
+              "primary-dark": "#E86F85",
+              secondary: "#FFD6A5",
+              accent: "#A0E7E5",
+              "background-light": "#FFF9F5",
+              "background-dark": "#2D2424",
+              "surface-light": "#ffffff",
+              "surface-dark": "#3B3030",
+              "text-primary": "#4A403A",
+              "text-secondary": "#9C8E88",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"],
+              body: ["Noto Sans SC", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+              lg: "1rem",
+              xl: "1.5rem",
+              "2xl": "2rem",
+              "3xl": "2.5rem",
+              full: "9999px",
+            },
+            boxShadow: {
+              soft: "0 8px 30px -4px rgba(255, 143, 163, 0.15)",
+              cute: "0 4px 0 0 rgba(0,0,0,0.05)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .toggle-checkbox:checked {
+        right: 0;
+        border-color: #ff8fa3;
+      }
+      .toggle-checkbox:checked + .toggle-label {
+        background-color: #ff8fa3;
+      }
+      .toggle-checkbox {
+        border-color: #e5e7eb;
+      }
+      body {
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(800px, 100dvh);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-body antialiased text-text-primary dark:text-white pb-24"
+  >
+    <div
+      class="relative flex h-full w-full flex-col overflow-x-hidden max-w-md mx-auto min-h-screen"
+    >
+      <div
+        class="sticky top-0 z-50 flex items-center bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md p-4 pb-2 justify-between"
+      >
+        <button
+          class="text-text-primary dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full bg-white dark:bg-surface-dark shadow-sm hover:scale-105 transition-transform"
+        >
+          <span
+            class="material-symbols-outlined rounded-full"
+            style="font-size: 20px"
+            >arrow_back_ios_new</span
+          >
+        </button>
+        <h2
+          class="text-text-primary dark:text-white text-lg font-bold tracking-wide flex-1 text-center pr-10"
+        >
+          设置
+        </h2>
+      </div>
+      <div class="px-5 pt-2 flex flex-col gap-6">
+        <div
+          class="bg-surface-light dark:bg-surface-dark rounded-3xl shadow-soft p-6 flex flex-col items-center justify-center relative overflow-hidden group border-2 border-white dark:border-surface-dark ring-2 ring-primary/10"
+        >
+          <div
+            class="absolute top-0 w-full h-32 bg-gradient-to-b from-primary/20 to-transparent opacity-60 rounded-t-3xl"
+          ></div>
+          <div class="flex items-center justify-center mb-4 relative z-10 mt-2">
+            <div class="flex items-center">
+              <div
+                class="relative z-10 transition-transform hover:scale-110 duration-300 group"
+              >
+                <div
+                  class="bg-center bg-no-repeat bg-cover border-[4px] border-white dark:border-surface-dark bg-blue-50 rounded-full w-20 h-20 shadow-md ring-2 ring-blue-200 dark:ring-blue-900"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD7t15DPk7XNqNOK-2bpyLFIZhTxokFdRUrlmCI4DX7xG9VWDfQKwtwwRA9VOLPyzP_edidoCLix6yf1vvRFprLMfZTuj6M2q5uVUx9e5DKhEFf7szmRjuQqANzbZWD_hOZlKNvPBAGe4ahX615H5JRtm6DLE-CXqeyGWciUWSZvAbe2Rsbo_wOhxUfLuKo5TuYyGwVUvTUYGLLBDvoU1v40Ti0BqEM98DpEthKLXs6O_YkkfS8G60DKGpEFVE2euQCvbzWwYz4Dwdj');
+                  "
+                ></div>
+                <div
+                  class="absolute -bottom-2 -right-2 bg-white dark:bg-surface-dark px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm text-blue-400 border border-blue-100 dark:border-blue-900"
+                >
+                  他
+                </div>
+              </div>
+              <div
+                class="-mx-3 z-20 bg-white dark:bg-surface-dark rounded-full p-1 border-2 border-primary/20 shadow-sm animate-pulse"
+              >
+                <span
+                  class="material-symbols-outlined text-primary block"
+                  style="font-size: 20px; font-variation-settings: 'FILL' 1"
+                  >favorite</span
+                >
+              </div>
+              <div
+                class="relative z-10 transition-transform hover:scale-110 duration-300"
+              >
+                <div
+                  class="bg-center bg-no-repeat bg-cover border-[4px] border-white dark:border-surface-dark bg-pink-50 rounded-full w-20 h-20 shadow-md ring-2 ring-pink-200 dark:ring-pink-900"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAvjmBqYjaGV4XYwjzk7YWwMF4Sx_Na2QwyhnGIyIMib5Zkjey_-o8SrrsJB4GiaZrLuuzcVt9FetxOEGmAZ4-2-V7NLzY0xZyxzTFOS6i4tQ6pdd5iXkfOrdrgLmhk1b7MBLrgXtyeDvQQBVywJxFh7i9vzPchrVk5Ar3StZbsxhUcBmnuQFx8HYKRHs-hqyyxrCOdcz9H99A6oqk0uHpNJkcy9knnZc02AKijIxYsyelfleKu6RBWer37zs-SfG5ZVa1hE2j4tS1U');
+                  "
+                ></div>
+                <div
+                  class="absolute -bottom-2 -left-2 bg-white dark:bg-surface-dark px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm text-pink-400 border border-pink-100 dark:border-pink-900"
+                >
+                  她
+                </div>
+              </div>
+            </div>
+          </div>
+          <h3
+            class="text-text-primary dark:text-white tracking-tight text-xl font-bold leading-tight text-center relative z-10"
+          >
+            小辉 &amp; 小雅
+          </h3>
+          <div
+            class="flex items-center gap-1 mt-1 mb-5 relative z-10 bg-primary/10 px-3 py-1 rounded-full"
+          >
+            <span class="text-primary text-xs font-bold">甜蜜相恋 1204 天</span>
+          </div>
+          <button
+            class="flex items-center justify-center px-6 py-2.5 rounded-2xl bg-gradient-to-r from-background-light to-white dark:from-surface-dark dark:to-surface-dark border-2 border-primary/20 hover:border-primary/50 text-text-primary dark:text-white text-sm font-bold tracking-wide transition-all shadow-sm hover:shadow-md active:scale-95 relative z-10"
+          >
+            <span
+              class="material-symbols-outlined mr-2 text-primary"
+              style="font-size: 18px"
+              >edit_square</span
+            >
+            编辑甜蜜档案
+          </button>
+        </div>
+        <div class="flex flex-col gap-3">
+          <h3
+            class="text-text-secondary dark:text-gray-400 text-xs font-bold px-4 flex items-center gap-2"
+          >
+            <span class="w-1 h-4 bg-secondary rounded-full"></span>
+            我们的故事
+          </h3>
+          <div
+            class="bg-surface-light dark:bg-surface-dark rounded-3xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800"
+          >
+            <div
+              class="flex items-center justify-between p-4 py-5 hover:bg-orange-50/50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-50 dark:border-gray-800"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-500 shadow-sm transform rotate-3"
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-variation-settings: 'FILL' 1"
+                    >favorite</span
+                  >
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <span
+                    class="font-bold text-text-primary dark:text-white text-[15px]"
+                    >相恋纪念日</span
+                  >
+                  <span class="text-xs text-text-secondary dark:text-gray-400"
+                    >故事开始的那一天</span
+                  >
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-xl"
+                  >2020.10.14</span
+                >
+                <span class="material-symbols-outlined text-gray-300 text-sm"
+                  >arrow_forward_ios</span
+                >
+              </div>
+            </div>
+            <div
+              class="flex items-center justify-between p-4 py-5 hover:bg-blue-50/50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-500 shadow-sm transform -rotate-2"
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-variation-settings: 'FILL' 1"
+                    >event_upcoming</span
+                  >
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <span
+                    class="font-bold text-text-primary dark:text-white text-[15px]"
+                    >纪念日提醒</span
+                  >
+                  <span class="text-xs text-text-secondary dark:text-gray-400"
+                    >不错过每个重要时刻</span
+                  >
+                </div>
+              </div>
+              <div
+                class="relative inline-block w-11 mr-1 align-middle select-none transition duration-200 ease-in"
+              >
+                <input
+                  class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-2 appearance-none cursor-pointer checked:right-0 checked:border-primary transition-all duration-300 top-0 left-0 shadow-sm"
+                  id="toggle-anniversary"
+                  name="toggle"
+                  type="checkbox"
+                />
+                <label
+                  class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-200 dark:bg-gray-700 cursor-pointer transition-colors duration-300"
+                  for="toggle-anniversary"
+                ></label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <h3
+            class="text-text-secondary dark:text-gray-400 text-xs font-bold px-4 flex items-center gap-2"
+          >
+            <span class="w-1 h-4 bg-accent rounded-full"></span>
+            隐私与安全
+          </h3>
+          <div
+            class="bg-surface-light dark:bg-surface-dark rounded-3xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-800"
+          >
+            <div
+              class="flex items-center justify-between p-4 py-5 hover:bg-green-50/50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-2xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 shadow-sm transform rotate-1"
+                >
+                  <span
+                    class="material-symbols-outlined"
+                    style="font-variation-settings: 'FILL' 1"
+                    >lock_open</span
+                  >
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <span
+                    class="font-bold text-text-primary dark:text-white text-[15px]"
+                    >应用锁</span
+                  >
+                  <span class="text-xs text-text-secondary dark:text-gray-400"
+                    >面容 ID / 密码保护</span
+                  >
+                </div>
+              </div>
+              <div
+                class="relative inline-block w-11 mr-1 align-middle select-none transition duration-200 ease-in"
+              >
+                <input
+                  checked=""
+                  class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-2 appearance-none cursor-pointer checked:right-0 checked:border-primary transition-all duration-300 top-0 left-0 shadow-sm"
+                  id="toggle-lock"
+                  name="toggle"
+                  type="checkbox"
+                />
+                <label
+                  class="toggle-label block overflow-hidden h-6 rounded-full bg-primary/40 cursor-pointer transition-colors duration-300"
+                  for="toggle-lock"
+                ></label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between px-4">
+            <h3
+              class="text-text-secondary dark:text-gray-400 text-xs font-bold flex items-center gap-2"
+            >
+              <span class="w-1 h-4 bg-yellow-300 rounded-full"></span>
+              数据宝箱
+            </h3>
+            <span
+              class="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 text-[10px] font-bold px-2 py-1 rounded-lg border border-yellow-100 dark:border-yellow-800 flex items-center gap-1"
+            >
+              <span class="material-symbols-outlined text-[14px]"
+                >wifi_off</span
+              >
+              离线模式
+            </span>
+          </div>
+          <div
+            class="bg-surface-light dark:bg-surface-dark rounded-3xl shadow-soft p-5 border-2 border-dashed border-primary/30 relative overflow-hidden group"
+          >
+            <div
+              class="absolute right-[-30px] top-[-30px] w-40 h-40 bg-yellow-100/50 dark:bg-yellow-900/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700"
+            ></div>
+            <div class="flex items-start gap-4 mb-5 relative z-10">
+              <div
+                class="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900/40 dark:to-orange-900/40 flex items-center justify-center text-orange-500 shadow-inner border border-white/50 dark:border-white/5"
+              >
+                <span
+                  class="material-symbols-outlined text-3xl drop-shadow-sm"
+                  style="font-variation-settings: 'FILL' 1"
+                  >inventory_2</span
+                >
+              </div>
+              <div>
+                <h4
+                  class="font-bold text-text-primary dark:text-white text-base"
+                >
+                  回忆只属于你们
+                </h4>
+                <p
+                  class="text-xs text-text-secondary dark:text-gray-400 mt-1.5 leading-relaxed"
+                >
+                  LoveSpace
+                  将所有甜蜜点滴保存在你的手机本地。我们无法偷看哦！<br />记得把它们放进保险箱（定期备份）。
+                </p>
+              </div>
+            </div>
+            <div class="flex gap-3 relative z-10">
+              <button
+                class="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white py-3 px-4 rounded-xl font-bold text-sm shadow-md shadow-primary/20 transition-all active:scale-95 active:shadow-none"
+              >
+                <span class="material-symbols-outlined text-lg">ios_share</span>
+                导出备份
+              </button>
+              <button
+                class="flex items-center justify-center gap-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-700 text-text-primary dark:text-white py-3 px-4 rounded-xl font-bold text-sm hover:bg-gray-50 dark:hover:bg-white/10 transition-all active:scale-95"
+              >
+                <span class="material-symbols-outlined text-lg"
+                  >restore_page</span
+                >
+                恢复数据
+              </button>
+            </div>
+            <div
+              class="mt-4 pt-3 border-t border-dashed border-gray-200 dark:border-gray-700 flex justify-between items-center relative z-10"
+            >
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-gray-400 text-xs"
+                  >history</span
+                >
+                <span
+                  class="text-[10px] font-bold text-gray-400 uppercase tracking-wide"
+                  >上次备份</span
+                >
+              </div>
+              <span
+                class="text-xs font-medium text-text-primary dark:text-white bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md"
+                >暂无</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="py-6 flex flex-col items-center justify-center opacity-60">
+          <div class="flex items-center gap-1 text-primary/40 mb-2">
+            <span class="material-symbols-outlined text-sm">pets</span>
+            <span class="material-symbols-outlined text-sm">pets</span>
+            <span class="material-symbols-outlined text-sm">pets</span>
+          </div>
+          <p
+            class="text-[10px] font-medium text-text-secondary dark:text-gray-500"
+          >
+            LoveSpace 暖心版 v1.0.0 (Local)
+          </p>
+        </div>
+      </div>
+      <div
+        class="sticky bottom-0 w-full bg-surface-light/95 dark:bg-surface-dark/95 backdrop-blur-lg border-t border-gray-100 dark:border-gray-800 pb-8 pt-3 px-6 flex justify-between items-center rounded-t-3xl shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.05)] z-40"
+      >
+        <div
+          class="flex flex-col items-center gap-1 w-14 text-gray-400 hover:text-primary cursor-pointer transition-colors group"
+        >
+          <div
+            class="p-1 rounded-xl group-hover:bg-primary/5 transition-colors"
+          >
+            <span
+              class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform duration-300"
+              >cottage</span
+            >
+          </div>
+          <span class="text-[10px] font-medium tracking-wide">首页</span>
+        </div>
+        <div
+          class="flex flex-col items-center gap-1 w-14 text-gray-400 hover:text-primary cursor-pointer transition-colors group"
+        >
+          <div
+            class="p-1 rounded-xl group-hover:bg-primary/5 transition-colors"
+          >
+            <span
+              class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform duration-300"
+              >calendar_month</span
+            >
+          </div>
+          <span class="text-[10px] font-medium tracking-wide">日历</span>
+        </div>
+        <div
+          class="flex flex-col items-center gap-1 w-14 text-gray-400 hover:text-primary cursor-pointer transition-colors group"
+        >
+          <div
+            class="p-1 rounded-xl group-hover:bg-primary/5 transition-colors"
+          >
+            <span
+              class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform duration-300"
+              >favorite</span
+            >
+          </div>
+          <span class="text-[10px] font-medium tracking-wide">纪念日</span>
+        </div>
+        <div
+          class="flex flex-col items-center gap-1 w-14 text-primary cursor-pointer transition-colors relative"
+        >
+          <div class="absolute -top-1 w-1 h-1 bg-primary rounded-full"></div>
+          <div class="p-1 rounded-xl bg-primary/10">
+            <span
+              class="material-symbols-outlined text-2xl font-variation-settings-fill animate-pulse-slow"
+              style="font-variation-settings: 'FILL' 1"
+              >settings</span
+            >
+          </div>
+          <span class="text-[10px] font-bold tracking-wide">设置</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
