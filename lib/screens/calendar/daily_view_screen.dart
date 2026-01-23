@@ -19,16 +19,24 @@ class DailyViewScreen extends ConsumerStatefulWidget {
 }
 
 class _DailyViewScreenState extends ConsumerState<DailyViewScreen> {
-  File? _firstPhoto;
-  bool _isLoadingPhoto = true;
+  List<File> _photos = [];
+  bool _isLoadingPhotos = true;
+  int _currentPhotoIndex = 0;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
-    _loadFirstPhoto();
+    _loadPhotos();
   }
 
-  Future<void> _loadFirstPhoto() async {
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadPhotos() async {
     final dateParts = widget.dateStr.split('-');
     final date = DateTime(
       int.parse(dateParts[0]),
@@ -38,15 +46,21 @@ class _DailyViewScreenState extends ConsumerState<DailyViewScreen> {
 
     final assets = await ref.read(dateMediaProvider(date).future);
     if (assets.isNotEmpty && mounted) {
-      final file = await assets.first.file;
+      final files = <File>[];
+      for (final asset in assets) {
+        final file = await asset.file;
+        if (file != null) {
+          files.add(file);
+        }
+      }
       if (mounted) {
         setState(() {
-          _firstPhoto = file;
-          _isLoadingPhoto = false;
+          _photos = files;
+          _isLoadingPhotos = false;
         });
       }
     } else if (mounted) {
-      setState(() => _isLoadingPhoto = false);
+      setState(() => _isLoadingPhotos = false);
     }
   }
 
@@ -172,12 +186,12 @@ class _DailyViewScreenState extends ConsumerState<DailyViewScreen> {
         ),
         child: Column(
           children: [
-            // 照片
+            // 照片轮播
             ClipRRect(
               borderRadius: BorderRadius.circular(24),
               child: AspectRatio(
                 aspectRatio: 3 / 4,
-                child: _isLoadingPhoto
+                child: _isLoadingPhotos
                     ? Container(
                         color: AppColors.backgroundPink,
                         child: const Center(
@@ -187,14 +201,53 @@ class _DailyViewScreenState extends ConsumerState<DailyViewScreen> {
                           ),
                         ),
                       )
-                    : _firstPhoto != null
-                        ? Image.file(
-                            _firstPhoto!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (ctx, err, stack) =>
-                                _buildPlaceholder(),
-                          )
-                        : _buildPlaceholder(),
+                    : _photos.isNotEmpty
+                    ? Stack(
+                        children: [
+                          PageView.builder(
+                            controller: _pageController,
+                            itemCount: _photos.length,
+                            onPageChanged: (index) {
+                              setState(() => _currentPhotoIndex = index);
+                            },
+                            itemBuilder: (context, index) {
+                              return Image.file(
+                                _photos[index],
+                                fit: BoxFit.cover,
+                                errorBuilder: (ctx, err, stack) =>
+                                    _buildPlaceholder(),
+                              );
+                            },
+                          ),
+                          // 指示器
+                          if (_photos.length > 1)
+                            Positioned(
+                              bottom: 12,
+                              left: 0,
+                              right: 0,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(
+                                  _photos.length,
+                                  (index) => Container(
+                                    width: index == _currentPhotoIndex ? 16 : 6,
+                                    height: 6,
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: index == _currentPhotoIndex
+                                          ? Colors.white
+                                          : Colors.white.withValues(alpha: 0.5),
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      )
+                    : _buildPlaceholder(),
               ),
             ),
             const SizedBox(height: 8),
@@ -231,10 +284,7 @@ class _DailyViewScreenState extends ConsumerState<DailyViewScreen> {
       ),
       child: Center(
         child: log?.hasMood == true
-            ? Text(
-                log!.mood!,
-                style: const TextStyle(fontSize: 64),
-              )
+            ? Text(log!.mood!, style: const TextStyle(fontSize: 64))
             : Icon(
                 Icons.photo_rounded,
                 size: 64,
@@ -377,9 +427,7 @@ class _DailyViewScreenState extends ConsumerState<DailyViewScreen> {
               color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Center(
-              child: Icon(icon, color: color, size: 24),
-            ),
+            child: Center(child: Icon(icon, color: color, size: 24)),
           ),
           const SizedBox(height: 8),
           Text(
@@ -400,9 +448,7 @@ class _DailyViewScreenState extends ConsumerState<DailyViewScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.backgroundWhite,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text(
           '删除日记',
           style: TextStyle(
@@ -425,7 +471,9 @@ class _DailyViewScreenState extends ConsumerState<DailyViewScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await ref.read(dailyLogProvider.notifier).deleteLog(widget.dateStr);
+              await ref
+                  .read(dailyLogProvider.notifier)
+                  .deleteLog(widget.dateStr);
               if (mounted) {
                 context.pop();
               }
@@ -467,11 +515,7 @@ class _DoodleBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: CustomPaint(
-        painter: _DoodlePainter(),
-      ),
-    );
+    return Positioned.fill(child: CustomPaint(painter: _DoodlePainter()));
   }
 }
 
