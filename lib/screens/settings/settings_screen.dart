@@ -102,7 +102,7 @@ class SettingsScreen extends ConsumerWidget {
     return GestureDetector(
       onTap: () => context.push(AppRoutes.profileEdit),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.only(bottom: 24),
         decoration: BoxDecoration(
           color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(
@@ -121,11 +121,12 @@ class SettingsScreen extends ConsumerWidget {
           children: [
             // 顶部渐变装饰
             Positioned(
-              top: -24,
-              left: -24,
-              right: -24,
+              top: 0,
+              left: 0,
+              right: 0,
               child: Container(
                 height: 128,
+                width: double.infinity,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -144,7 +145,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             Column(
               children: [
-                const SizedBox(height: 8),
+                const SizedBox(height: 18),
                 // 头像区域
                 _buildCoupleAvatars(myAvatar, partnerAvatar),
                 const SizedBox(height: 16),
