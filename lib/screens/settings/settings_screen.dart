@@ -76,49 +76,16 @@ class SettingsScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.background.withValues(alpha: 0.9),
       ),
-      child: Row(
-        children: [
-          // 返回按钮
-          GestureDetector(
-            onTap: () => context.pop(),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.cardBackground,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 20,
-                color: AppColors.textPrimary,
-              ),
-            ),
+      child: Center(
+        child: Text(
+          '设置',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+            letterSpacing: 0.5,
           ),
-          // 标题
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 40),
-              child: Text(
-                '设置',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -138,7 +105,9 @@ class SettingsScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(40), // rounded-3xl = 2.5rem = 40px
+          borderRadius: BorderRadius.circular(
+            40,
+          ), // rounded-3xl = 2.5rem = 40px
           border: Border.all(color: Colors.white, width: 2),
           boxShadow: [
             BoxShadow(
@@ -191,7 +160,10 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(height: 4),
                 // 在一起天数
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -208,15 +180,17 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(height: 20),
                 // 编辑按钮 (demo8: rounded-2xl = 32px)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        AppColors.background,
-                        Colors.white,
-                      ],
+                      colors: [AppColors.background, Colors.white],
                     ),
-                    borderRadius: BorderRadius.circular(32), // rounded-2xl = 2rem = 32px
+                    borderRadius: BorderRadius.circular(
+                      32,
+                    ), // rounded-2xl = 2rem = 32px
                     border: Border.all(
                       color: AppColors.primary.withValues(alpha: 0.2),
                       width: 2,
@@ -423,10 +397,7 @@ class SettingsScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(40), // rounded-3xl = 2.5rem = 40px
         border: Border.all(color: AppColors.gray100),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 4,
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 4),
         ],
       ),
       child: Column(
@@ -465,7 +436,8 @@ class SettingsScreen extends ConsumerWidget {
     String dateText = '未设置';
     coupleAsync.whenData((info) {
       final date = info.startDate;
-      dateText = '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
+      dateText =
+          '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
     });
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -474,7 +446,9 @@ class SettingsScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(24), // rounded-xl = 1.5rem = 24px
+            borderRadius: BorderRadius.circular(
+              24,
+            ), // rounded-xl = 1.5rem = 24px
           ),
           child: Text(
             dateText,
@@ -503,10 +477,7 @@ class SettingsScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(40), // rounded-3xl = 2.5rem = 40px
         border: Border.all(color: AppColors.gray100),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 4,
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 4),
         ],
       ),
       child: _buildSettingItem(
@@ -552,7 +523,9 @@ class SettingsScreen extends ConsumerWidget {
                     height: 48,
                     decoration: BoxDecoration(
                       color: iconBgColor,
-                      borderRadius: BorderRadius.circular(32), // rounded-2xl = 2rem = 32px
+                      borderRadius: BorderRadius.circular(
+                        32,
+                      ), // rounded-2xl = 2rem = 32px
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -749,12 +722,11 @@ class SettingsScreen extends ConsumerWidget {
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.yellow100,
-                          AppColors.orange100,
-                        ],
+                        colors: [AppColors.yellow100, AppColors.orange100],
                       ),
-                      borderRadius: BorderRadius.circular(32), // rounded-2xl = 2rem = 32px
+                      borderRadius: BorderRadius.circular(
+                        32,
+                      ), // rounded-2xl = 2rem = 32px
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.5),
                       ),
@@ -813,7 +785,9 @@ class SettingsScreen extends ConsumerWidget {
                           gradient: LinearGradient(
                             colors: [AppColors.primary, AppColors.primaryDark],
                           ),
-                          borderRadius: BorderRadius.circular(24), // rounded-xl = 1.5rem = 24px
+                          borderRadius: BorderRadius.circular(
+                            24,
+                          ), // rounded-xl = 1.5rem = 24px
                           boxShadow: [
                             BoxShadow(
                               color: AppColors.primary.withValues(alpha: 0.2),
@@ -849,10 +823,15 @@ class SettingsScreen extends ConsumerWidget {
                   GestureDetector(
                     onTap: () => _showRestoreDialog(context),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(24), // rounded-xl = 1.5rem = 24px
+                        borderRadius: BorderRadius.circular(
+                          24,
+                        ), // rounded-xl = 1.5rem = 24px
                         border: Border.all(color: AppColors.gray200),
                       ),
                       child: Row(
@@ -913,7 +892,10 @@ class SettingsScreen extends ConsumerWidget {
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.gray100,
                         borderRadius: BorderRadius.circular(4),
@@ -946,11 +928,23 @@ class SettingsScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.pets_rounded, size: 14, color: AppColors.primary.withValues(alpha: 0.4)),
+              Icon(
+                Icons.pets_rounded,
+                size: 14,
+                color: AppColors.primary.withValues(alpha: 0.4),
+              ),
               const SizedBox(width: 4),
-              Icon(Icons.pets_rounded, size: 14, color: AppColors.primary.withValues(alpha: 0.4)),
+              Icon(
+                Icons.pets_rounded,
+                size: 14,
+                color: AppColors.primary.withValues(alpha: 0.4),
+              ),
               const SizedBox(width: 4),
-              Icon(Icons.pets_rounded, size: 14, color: AppColors.primary.withValues(alpha: 0.4)),
+              Icon(
+                Icons.pets_rounded,
+                size: 14,
+                color: AppColors.primary.withValues(alpha: 0.4),
+              ),
             ],
           ),
           const SizedBox(height: 8),

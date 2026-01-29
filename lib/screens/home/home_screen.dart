@@ -78,9 +78,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildFloatingButton() {
     return GestureDetector(
-      onTap: () {
-        // TODO: 实现宠物/AI 功能
-      },
+      onTap: () => _handleFloatingButtonTap(),
       child: Container(
         width: 64,
         height: 64,
@@ -101,6 +99,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
+  }
+
+  /// 处理浮动按钮点击
+  void _handleFloatingButtonTap() {
+    // 获取今天的日期字符串
+    final now = DateTime.now();
+    final todayStr = '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    
+    // 检查今天是否已经有日记记录
+    final todayLog = ref.read(dateLogProvider(todayStr));
+    
+    if (todayLog != null) {
+      // 今天已经记录过，跳转到查看/编辑页面
+      context.push('/calendar/day/$todayStr');
+    } else {
+      // 今天还没记录，跳转到记录页面
+      context.push('/calendar/day/$todayStr/edit');
+    }
   }
 
   Widget _buildHeroSection(BuildContext context, WidgetRef ref, coupleInfo) {
