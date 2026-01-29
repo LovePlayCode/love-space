@@ -113,7 +113,7 @@ final dateLogProvider = Provider.family<DailyLog?, String>((ref, dateStr) {
   );
 });
 
-/// 指定日期的媒体 Provider（合并系统相册当日照片和用户手动添加的照片）
+/// 指定日期的媒体 Provider（只获取用户手动添加的照片）
 final dateMediaProvider = FutureProvider.family<List<AssetEntity>, DateTime>((ref, date) async {
   final service = SystemAlbumService();
   final hasPermission = await service.requestPermission();
@@ -123,60 +123,16 @@ final dateMediaProvider = FutureProvider.family<List<AssetEntity>, DateTime>((re
   final dbService = DatabaseService();
 
   try {
-    // 1. 获取用户手动添加到该日期的照片 ID
+    // 获取用户手动添加到该日期的照片 ID
     final manualAssetIds = await dbService.getAssetIdsByDate(dateStr);
     
-    // 2. 获取系统相册中该日期拍摄的照片
-    final startOfDay = DateTime(date.year, date.month, date.day);
-    final endOfDay = startOfDay.add(const Duration(days: 1));
+    if (manualAssetIds.isEmpty) return [];
 
-    final albums = await PhotoManager.getAssetPathList(
-      type: RequestType.common,
-      filterOption: FilterOptionGroup(
-        createTimeCond: DateTimeCond(
-          min: startOfDay,
-          max: endOfDay,
-        ),
-        orders: [
-          const OrderOption(type: OrderOptionType.createDate, asc: false),
-        ],
-      ),
-    );
-
-    List<AssetEntity> systemAssets = [];
-    if (albums.isNotEmpty) {
-      final recentAlbum = albums.first;
-      final count = await recentAlbum.assetCountAsync;
-      if (count > 0) {
-        systemAssets = await recentAlbum.getAssetListPaged(page: 0, size: count);
-      }
-    }
-
-    // 3. 获取手动添加的照片（通过 assetId）
-    List<AssetEntity> manualAssets = [];
-    if (manualAssetIds.isNotEmpty) {
-      for (final assetId in manualAssetIds) {
-        final asset = await AssetEntity.fromId(assetId);
-        if (asset != null) {
-          manualAssets.add(asset);
-        }
-      }
-    }
-
-    // 4. 合并并去重（手动添加的优先显示在前面）
-    final allAssetIds = <String>{};
+    // 通过 assetId 获取照片
     final result = <AssetEntity>[];
-    
-    // 先添加手动添加的
-    for (final asset in manualAssets) {
-      if (allAssetIds.add(asset.id)) {
-        result.add(asset);
-      }
-    }
-    
-    // 再添加系统相册当日的（去重）
-    for (final asset in systemAssets) {
-      if (allAssetIds.add(asset.id)) {
+    for (final assetId in manualAssetIds) {
+      final asset = await AssetEntity.fromId(assetId);
+      if (asset != null) {
         result.add(asset);
       }
     }

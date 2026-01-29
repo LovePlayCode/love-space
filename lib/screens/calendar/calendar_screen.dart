@@ -739,7 +739,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   padding: const EdgeInsets.only(right: 12),
                   child: _AssetThumbnail(
                     asset: asset,
-                    onTap: () => context.push('/album/photo/${asset.id}'),
+                    onTap: () => context.push('/album/photo/${Uri.encodeComponent(asset.id)}'),
                   ),
                 );
               },
