@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      name="viewport"
+    />
+    <title>LoveSpace - 编辑甜蜜档案</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FF8FA3",
+              "primary-dark": "#E86F85",
+              secondary: "#FFD6A5",
+              accent: "#A0E7E5",
+              "background-light": "#FFF5F2", // Softer pastel peach
+              "background-dark": "#2D2424",
+              "surface-light": "#ffffff",
+              "surface-dark": "#3B3030",
+              "text-primary": "#4A403A",
+              "text-secondary": "#9C8E88",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "Noto Sans SC", "sans-serif"],
+              body: ["Noto Sans SC", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+              lg: "1rem",
+              xl: "1.5rem",
+              "2xl": "2rem",
+              "3xl": "2.5rem",
+              "4xl": "40px",
+              full: "9999px",
+            },
+            boxShadow: {
+              soft: "0 8px 30px -4px rgba(255, 143, 163, 0.12)",
+              squishy: "0 10px 0 0 rgba(0,0,0,0.02)",
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/tailwindcss">
+      body {
+        background: linear-gradient(180deg, #fff5f2 0%, #ffe4e1 100%);
+        min-height: 100vh;
+      }
+      .bubbly-input {
+        @apply w-full bg-gray-50/50 border-2 border-gray-100/50 rounded-2xl px-5 py-4 text-text-primary font-medium focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-300 placeholder:text-gray-300;
+      }
+      .avatar-frame {
+        @apply relative w-24 h-24 rounded-full border-4 border-white shadow-md overflow-visible bg-gray-100;
+      }
+      .add-photo-badge {
+        @apply absolute -bottom-1 -right-1 bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center border-2 border-white shadow-sm cursor-pointer hover:scale-110 transition-transform active:scale-95;
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="font-body antialiased text-text-primary pb-24">
+    <div
+      class="relative flex h-full w-full flex-col overflow-x-hidden max-w-md mx-auto min-h-screen"
+    >
+      <div
+        class="sticky top-0 z-50 flex items-center bg-transparent backdrop-blur-sm p-4 pb-2 justify-between"
+      >
+        <button
+          class="text-text-primary flex size-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm hover:scale-105 transition-transform"
+        >
+          <span
+            class="material-symbols-outlined rounded-full"
+            style="font-size: 20px"
+            >arrow_back_ios_new</span
+          >
+        </button>
+        <h2
+          class="text-text-primary text-lg font-bold tracking-wide flex-1 text-center pr-10"
+        >
+          编辑甜蜜档案
+        </h2>
+      </div>
+      <div class="px-5 pt-4">
+        <div
+          class="bg-white rounded-4xl shadow-soft p-8 flex flex-col gap-8 mb-6 border border-white"
+        >
+          <div class="flex justify-center items-center gap-8 py-2">
+            <div class="flex flex-col items-center gap-2">
+              <div class="avatar-frame">
+                <div
+                  class="w-full h-full bg-cover bg-center rounded-full"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAvjmBqYjaGV4XYwjzk7YWwMF4Sx_Na2QwyhnGIyIMib5Zkjey_-o8SrrsJB4GiaZrLuuzcVt9FetxOEGmAZ4-2-V7NLzY0xZyxzTFOS6i4tQ6pdd5iXkfOrdrgLmhk1b7MBLrgXtyeDvQQBVywJxFh7i9vzPchrVk5Ar3StZbsxhUcBmnuQFx8HYKRHs-hqyyxrCOdcz9H99A6oqk0uHpNJkcy9knnZc02AKijIxYsyelfleKu6RBWer37zs-SfG5ZVa1hE2j4tS1U');
+                  "
+                ></div>
+                <div class="add-photo-badge">
+                  <span class="material-symbols-outlined text-sm font-bold"
+                    >add_a_photo</span
+                  >
+                </div>
+              </div>
+              <span class="text-xs font-bold text-text-secondary">我</span>
+            </div>
+            <div class="text-primary/30">
+              <span
+                class="material-symbols-outlined text-3xl"
+                style="font-variation-settings: 'FILL' 1"
+                >favorite</span
+              >
+            </div>
+            <div class="flex flex-col items-center gap-2">
+              <div class="avatar-frame">
+                <div
+                  class="w-full h-full bg-cover bg-center rounded-full"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD7t15DPk7XNqNOK-2bpyLFIZhTxokFdRUrlmCI4DX7xG9VWDfQKwtwwRA9VOLPyzP_edidoCLix6yf1vvRFprLMfZTuj6M2q5uVUx9e5DKhEFf7szmRjuQqANzbZWD_hOZlKNvPBAGe4ahX615H5JRtm6DLE-CXqeyGWciUWSZvAbe2Rsbo_wOhxUfLuKo5TuYyGwVUvTUYGLLBDvoU1v40Ti0BqEM98DpEthKLXs6O_YkkfS8G60DKGpEFVE2euQCvbzWwYz4Dwdj');
+                  "
+                ></div>
+                <div class="add-photo-badge">
+                  <span class="material-symbols-outlined text-sm font-bold"
+                    >add_a_photo</span
+                  >
+                </div>
+              </div>
+              <span class="text-xs font-bold text-text-secondary">TA</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-6">
+            <div class="space-y-2">
+              <label
+                class="text-xs font-bold text-text-secondary ml-2 flex items-center gap-1"
+              >
+                <span class="material-symbols-outlined text-[14px]">face</span>
+                我的昵称
+              </label>
+              <input
+                class="bubbly-input"
+                placeholder="请输入你的昵称"
+                type="text"
+                value="小雅"
+              />
+            </div>
+            <div class="space-y-2">
+              <label
+                class="text-xs font-bold text-text-secondary ml-2 flex items-center gap-1"
+              >
+                <span class="material-symbols-outlined text-[14px]"
+                  >face_6</span
+                >
+                TA的昵称
+              </label>
+              <input
+                class="bubbly-input"
+                placeholder="请输入TA的昵称"
+                type="text"
+                value="小辉"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          class="bg-white rounded-4xl shadow-soft p-6 flex items-center justify-between border border-white mb-10"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="w-12 h-12 rounded-2xl bg-secondary/20 flex items-center justify-center text-orange-400"
+            >
+              <span
+                class="material-symbols-outlined text-2xl"
+                style="font-variation-settings: 'FILL' 1"
+                >calendar_today</span
+              >
+            </div>
+            <div>
+              <p
+                class="text-[10px] font-bold text-text-secondary uppercase tracking-wider"
+              >
+                在一起的日期
+              </p>
+              <p class="text-base font-bold text-text-primary">
+                2020年10月14日
+              </p>
+            </div>
+          </div>
+          <button
+            class="bg-gray-50 p-2 rounded-xl text-text-secondary hover:text-primary transition-colors"
+          >
+            <span class="material-symbols-outlined">edit_calendar</span>
+          </button>
+        </div>
+        <button
+          class="w-full bg-primary hover:bg-primary-dark text-white py-5 rounded-full text-lg font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 mb-10"
+        >
+          <span class="material-symbols-outlined">check_circle</span>
+          保存更改
+        </button>
+      </div>
+    </div>
+  </body>
+</html>

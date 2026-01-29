@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -56,225 +57,468 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('编辑资料'),
-        backgroundColor: AppColors.background,
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _save,
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('保存'),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFF5F2),
+              Color(0xFFFFE4E1),
+            ],
           ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // 头像区域
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.cardBackground,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                const Text('头像', style: AppTextStyles.subtitle2),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildAvatarPicker(
-                      avatar: _myAvatar,
-                      label: '我',
-                      onTap: () => _pickAvatar(true),
-                    ),
-                    const SizedBox(width: 40),
-                    const Icon(
-                      Icons.favorite_rounded,
-                      color: AppColors.primary,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 40),
-                    _buildAvatarPicker(
-                      avatar: _partnerAvatar,
-                      label: 'TA',
-                      onTap: () => _pickAvatar(false),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          // 昵称区域
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.cardBackground,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('昵称', style: AppTextStyles.subtitle2),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _myNicknameController,
-                  decoration: const InputDecoration(
-                    labelText: '我的昵称',
-                    prefixIcon: Icon(Icons.person_rounded),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _partnerNicknameController,
-                  decoration: const InputDecoration(
-                    labelText: 'TA的昵称',
-                    prefixIcon: Icon(Icons.person_outline_rounded),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          // 恋爱日期区域
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.cardBackground,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('在一起的日子', style: AppTextStyles.subtitle2),
-                const SizedBox(height: 16),
-                GestureDetector(
-                  onTap: _selectStartDate,
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundPink,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.calendar_today_rounded,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            _startDate != null
-                                ? DateFormat('yyyy年MM月dd日').format(_startDate!)
-                                : '选择你们在一起的日期',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: _startDate != null
-                                  ? AppColors.textPrimary
-                                  : AppColors.textHint,
-                            ),
-                          ),
-                        ),
-                        const Icon(
-                          Icons.chevron_right_rounded,
-                          color: AppColors.textHint,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (_startDate != null) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLighter,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.favorite_rounded,
-                          color: AppColors.primary,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '已经在一起 ${_calculateDays()} 天',
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 40),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAvatarPicker({
-    required String? avatar,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: onTap,
-          child: Stack(
+        ),
+        child: SafeArea(
+          child: Column(
             children: [
-              AvatarWidget(imagePath: avatar, size: 80),
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.backgroundWhite,
-                      width: 2,
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt_rounded,
-                    color: AppColors.textWhite,
-                    size: 14,
+              // 顶部导航栏
+              _buildAppBar(),
+              // 内容区域
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      // 头像和昵称卡片
+                      _buildProfileCard(),
+                      const SizedBox(height: 24),
+                      // 在一起日期卡片
+                      _buildDateCard(),
+                      const SizedBox(height: 40),
+                      // 保存按钮
+                      _buildSaveButton(),
+                      const SizedBox(height: 40),
+                    ],
                   ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// 顶部导航栏 (demo9: sticky top bar with back button)
+  Widget _buildAppBar() {
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              // 返回按钮 (demo9: size-10 rounded-full bg-white shadow-sm)
+              GestureDetector(
+                onTap: () => context.pop(),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 20,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              // 标题 (demo9: text-lg font-bold tracking-wide text-center)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 40),
+                  child: Text(
+                    '编辑甜蜜档案',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 头像和昵称卡片 (demo9: rounded-4xl = 40px, shadow-soft, p-8)
+  Widget _buildProfileCard() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(40),
+        border: Border.all(color: Colors.white, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.12),
+            blurRadius: 30,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // 头像区域 (demo9: flex justify-center items-center gap-8)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 我的头像
+              _buildAvatarPicker(
+                avatar: _myAvatar,
+                label: '我',
+                onTap: () => _pickAvatar(true),
+              ),
+              const SizedBox(width: 24),
+              // 爱心图标 (demo9: text-primary/30 text-3xl)
+              Icon(
+                Icons.favorite_rounded,
+                size: 28,
+                color: AppColors.primary.withValues(alpha: 0.3),
+              ),
+              const SizedBox(width: 24),
+              // TA的头像
+              _buildAvatarPicker(
+                avatar: _partnerAvatar,
+                label: 'TA',
+                onTap: () => _pickAvatar(false),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          // 昵称输入区域 (demo9: flex flex-col gap-6)
+          Column(
+            children: [
+              // 我的昵称
+              _buildNicknameField(
+                controller: _myNicknameController,
+                label: '我的昵称',
+                icon: Icons.face_rounded,
+                placeholder: '请输入你的昵称',
+              ),
+              const SizedBox(height: 24),
+              // TA的昵称
+              _buildNicknameField(
+                controller: _partnerNicknameController,
+                label: 'TA的昵称',
+                icon: Icons.face_6_rounded,
+                placeholder: '请输入TA的昵称',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 头像选择器 (demo9: avatar-frame with add-photo-badge)
+  Widget _buildAvatarPicker({
+    required String? avatar,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.gray100,
+              border: Border.all(color: Colors.white, width: 4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // 头像
+                ClipOval(
+                  child: avatar != null
+                      ? AvatarWidget(imagePath: avatar, size: 80)
+                      : Container(
+                          width: 80,
+                          height: 80,
+                          color: AppColors.gray100,
+                          child: Icon(
+                            Icons.person_rounded,
+                            size: 36,
+                            color: AppColors.gray300,
+                          ),
+                        ),
+                ),
+                // 添加照片按钮 (demo9: add-photo-badge)
+                Positioned(
+                  right: -4,
+                  bottom: -4,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.add_a_photo_rounded,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 8),
+        // 标签 (demo9: text-xs font-bold text-text-secondary)
         Text(
           label,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textSecondary,
+          ),
         ),
       ],
+    );
+  }
+
+  /// 昵称输入框 (demo9: bubbly-input style)
+  Widget _buildNicknameField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required String placeholder,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 标签 (demo9: text-xs font-bold text-text-secondary ml-2)
+        Padding(
+          padding: const EdgeInsets.only(left: 8, bottom: 8),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 14,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // 输入框 (demo9: bubbly-input rounded-2xl px-5 py-4)
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.gray100.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(
+              color: AppColors.gray100.withValues(alpha: 0.5),
+              width: 2,
+            ),
+          ),
+          child: TextField(
+            controller: controller,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary,
+            ),
+            decoration: InputDecoration(
+              hintText: placeholder,
+              hintStyle: TextStyle(
+                color: AppColors.gray300,
+                fontWeight: FontWeight.w500,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 在一起日期卡片 (demo9: rounded-4xl shadow-soft p-6)
+  Widget _buildDateCard() {
+    return GestureDetector(
+      onTap: _selectStartDate,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(40),
+          border: Border.all(color: Colors.white, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              blurRadius: 30,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // 日历图标 (demo9: w-12 h-12 rounded-2xl bg-secondary/20)
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(32),
+              ),
+              child: Icon(
+                Icons.calendar_today_rounded,
+                size: 24,
+                color: AppColors.orange500,
+              ),
+            ),
+            const SizedBox(width: 16),
+            // 日期信息
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 标签 (demo9: text-[10px] font-bold uppercase tracking-wider)
+                  const Text(
+                    '在一起的日期',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textSecondary,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  // 日期 (demo9: text-base font-bold)
+                  Text(
+                    _startDate != null
+                        ? DateFormat('yyyy年M月d日').format(_startDate!)
+                        : '选择日期',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: _startDate != null
+                          ? AppColors.textPrimary
+                          : AppColors.textHint,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 编辑按钮 (demo9: bg-gray-50 p-2 rounded-xl)
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.gray100,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Icon(
+                Icons.edit_calendar_rounded,
+                size: 24,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 保存按钮 (demo9: w-full bg-primary rounded-full py-5 shadow-lg)
+  Widget _buildSaveButton() {
+    return GestureDetector(
+      onTap: _isLoading ? null : _save,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: _isLoading ? AppColors.primary.withValues(alpha: 0.6) : AppColors.primary,
+          borderRadius: BorderRadius.circular(9999),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.2),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_isLoading)
+              const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            else ...[
+              const Icon(
+                Icons.check_circle_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                '保存更改',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 

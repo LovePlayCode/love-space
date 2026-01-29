@@ -63,19 +63,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
                 // 最近日记瀑布流
-                SliverToBoxAdapter(
-                  child: _buildLogGrid(context),
-                ),
+                SliverToBoxAdapter(child: _buildLogGrid(context)),
                 // 底部间距
                 const SliverToBoxAdapter(child: SizedBox(height: 120)),
               ],
             ),
             // 浮动按钮
-            Positioned(
-              bottom: 100,
-              right: 20,
-              child: _buildFloatingButton(),
-            ),
+            Positioned(bottom: 20, right: 20, child: _buildFloatingButton()),
           ],
         ),
       ),
@@ -103,11 +97,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
         child: const Center(
-          child: Icon(
-            Icons.pets_rounded,
-            color: Colors.white,
-            size: 32,
-          ),
+          child: Icon(Icons.pets_rounded, color: Colors.white, size: 32),
         ),
       ),
     );
@@ -231,9 +221,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(30),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.4),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(30),
@@ -271,9 +259,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
@@ -311,9 +297,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             child: Text(
               '始于 $dateStr',
@@ -424,10 +408,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         data: (logsMap) {
           // 过滤有内容的日记，按日期从近到远排序
-          final logs = logsMap.values
-              .where((log) => log.hasTitle || log.hasContent || log.hasMood)
-              .toList()
-            ..sort((a, b) => b.dateStr.compareTo(a.dateStr));
+          final logs =
+              logsMap.values
+                  .where((log) => log.hasTitle || log.hasContent || log.hasMood)
+                  .toList()
+                ..sort((a, b) => b.dateStr.compareTo(a.dateStr));
 
           if (logs.isEmpty) {
             return _buildEmptyCard(
@@ -465,13 +450,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(children: leftColumn),
-        ),
+        Expanded(child: Column(children: leftColumn)),
         const SizedBox(width: 16),
-        Expanded(
-          child: Column(children: rightColumn),
-        ),
+        Expanded(child: Column(children: rightColumn)),
       ],
     );
   }
@@ -497,10 +478,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         decoration: BoxDecoration(
           color: AppColors.backgroundWhite,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: AppColors.backgroundWhite,
-            width: 2,
-          ),
+          border: Border.all(color: AppColors.backgroundWhite, width: 2),
           boxShadow: AppColors.cuteShadow,
         ),
         child: ClipRRect(
@@ -526,7 +504,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               return FutureBuilder<File?>(
                                 future: assets.first.file,
                                 builder: (context, snapshot) {
-                                  if (snapshot.hasData && snapshot.data != null) {
+                                  if (snapshot.hasData &&
+                                      snapshot.data != null) {
                                     return Image.file(
                                       snapshot.data!,
                                       fit: BoxFit.cover,
@@ -581,10 +560,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Row(
                       children: [
                         if (log.hasMood) ...[
-                          Text(
-                            log.mood!,
-                            style: const TextStyle(fontSize: 16),
-                          ),
+                          Text(log.mood!, style: const TextStyle(fontSize: 16)),
                           const SizedBox(width: 6),
                         ],
                         if (log.hasTitle)
@@ -649,10 +625,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       child: Center(
         child: log.hasMood
-            ? Text(
-                log.mood!,
-                style: const TextStyle(fontSize: 48),
-              )
+            ? Text(log.mood!, style: const TextStyle(fontSize: 48))
             : Icon(
                 Icons.edit_note_rounded,
                 size: 48,
@@ -732,11 +705,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     for (var i = 0; i < items.length && i < 10; i++) {
       final item = items[i];
       final ratio = ratios[i % ratios.length];
-      
+
       // 根据照片日期获取对应的日记
       final dateStr = DateFormat('yyyy-MM-dd').format(item.takenDateTime);
       final log = logsMap[dateStr];
-      
+
       final card = _buildPhotoCard(context, item, ratio, log: log);
 
       if (i % 2 == 0) {
@@ -749,20 +722,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(children: leftColumn),
-        ),
+        Expanded(child: Column(children: leftColumn)),
         const SizedBox(width: 16),
-        Expanded(
-          child: Column(children: rightColumn),
-        ),
+        Expanded(child: Column(children: rightColumn)),
       ],
     );
   }
 
-  Widget _buildPhotoCard(BuildContext context, MediaItem item, double aspectRatio, {DailyLog? log}) {
+  Widget _buildPhotoCard(
+    BuildContext context,
+    MediaItem item,
+    double aspectRatio, {
+    DailyLog? log,
+  }) {
     final dateStr = DateFormat('M月dd日').format(item.takenDateTime);
-    final hasLogContent = log != null && (log.hasTitle || log.hasContent || log.hasMood);
+    final hasLogContent =
+        log != null && (log.hasTitle || log.hasContent || log.hasMood);
 
     return GestureDetector(
       onTap: () => context.push('/moment/${item.id}'),
@@ -771,10 +746,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         decoration: BoxDecoration(
           color: AppColors.backgroundWhite,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: AppColors.backgroundWhite,
-            width: 2,
-          ),
+          border: Border.all(color: AppColors.backgroundWhite, width: 2),
           boxShadow: AppColors.cuteShadow,
         ),
         child: ClipRRect(
@@ -869,7 +841,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             right: 0,
                             bottom: 0,
                             child: Container(
-                              padding: const EdgeInsets.fromLTRB(12, 24, 12, 12),
+                              padding: const EdgeInsets.fromLTRB(
+                                12,
+                                24,
+                                12,
+                                12,
+                              ),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topCenter,
@@ -916,7 +893,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       log.content!,
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: Colors.white.withValues(alpha: 0.9),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.9,
+                                        ),
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -932,7 +911,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               // 标题（仅当没有日记内容时显示 caption）
-              if (!hasLogContent && item.caption != null && item.caption!.isNotEmpty)
+              if (!hasLogContent &&
+                  item.caption != null &&
+                  item.caption!.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
                   child: Text(
@@ -997,10 +978,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textHint,
-                ),
+                style: const TextStyle(fontSize: 14, color: AppColors.textHint),
               ),
             ],
           ),
@@ -1016,11 +994,7 @@ class _DoodleBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: CustomPaint(
-        painter: _DoodlePainter(),
-      ),
-    );
+    return Positioned.fill(child: CustomPaint(painter: _DoodlePainter()));
   }
 }
 
@@ -1057,13 +1031,14 @@ class _StickyTabDelegate extends SliverPersistentHeaderDelegate {
   final int selectedTab;
   final ValueChanged<int> onTabChanged;
 
-  _StickyTabDelegate({
-    required this.selectedTab,
-    required this.onTabChanged,
-  });
+  _StickyTabDelegate({required this.selectedTab, required this.onTabChanged});
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
       color: AppColors.background,
@@ -1087,7 +1062,9 @@ class _StickyTabDelegate extends SliverPersistentHeaderDelegate {
                 onTap: () => onTabChanged(0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: selectedTab == 0 ? AppColors.primary : Colors.transparent,
+                    color: selectedTab == 0
+                        ? AppColors.primary
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(22),
                   ),
                   child: Center(
@@ -1112,7 +1089,9 @@ class _StickyTabDelegate extends SliverPersistentHeaderDelegate {
                 onTap: () => onTabChanged(1),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: selectedTab == 1 ? AppColors.primary : Colors.transparent,
+                    color: selectedTab == 1
+                        ? AppColors.primary
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(22),
                   ),
                   child: Center(
@@ -1120,7 +1099,9 @@ class _StickyTabDelegate extends SliverPersistentHeaderDelegate {
                       '日历',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: selectedTab == 1 ? FontWeight.w700 : FontWeight.w600,
+                        fontWeight: selectedTab == 1
+                            ? FontWeight.w700
+                            : FontWeight.w600,
                         color: selectedTab == 1
                             ? AppColors.textWhite
                             : AppColors.textSecondary,
