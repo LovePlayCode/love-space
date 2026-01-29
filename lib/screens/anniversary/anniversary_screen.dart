@@ -41,15 +41,11 @@ class AnniversaryScreen extends ConsumerWidget {
                     _buildHeader(context),
                     // 内容
                     if (anniversaries.isEmpty)
-                      SliverFillRemaining(
-                        child: _buildEmptyState(context),
-                      )
+                      SliverFillRemaining(child: _buildEmptyState(context))
                     else
                       _buildContent(context, ref, anniversaries),
                     // 底部间距
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: 120),
-                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 120)),
                   ],
                 );
               },
@@ -109,7 +105,10 @@ class AnniversaryScreen extends ConsumerWidget {
             GestureDetector(
               onTap: () => context.push(AppRoutes.anniversaryAdd),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -162,14 +161,15 @@ class AnniversaryScreen extends ConsumerWidget {
     // 分组：即将到来、已过去
     final upcoming = anniversaries.where((a) => a.daysUntil >= 0).toList()
       ..sort((a, b) => a.daysUntil.compareTo(b.daysUntil));
-    final past = anniversaries
-        .where((a) => a.daysUntil < 0 && !a.isRecurring)
-        .toList()
-      ..sort((a, b) => b.daysUntil.compareTo(a.daysUntil));
+    final past =
+        anniversaries.where((a) => a.daysUntil < 0 && !a.isRecurring).toList()
+          ..sort((a, b) => b.daysUntil.compareTo(a.daysUntil));
 
     // 找到最近的一个纪念日作为顶部大卡片
     final nextBig = upcoming.isNotEmpty ? upcoming.first : null;
-    final otherUpcoming = upcoming.length > 1 ? upcoming.sublist(1) : <Anniversary>[];
+    final otherUpcoming = upcoming.length > 1
+        ? upcoming.sublist(1)
+        : <Anniversary>[];
 
     return SliverList(
       delegate: SliverChildListDelegate([
@@ -222,7 +222,11 @@ class AnniversaryScreen extends ConsumerWidget {
   }
 
   // 顶部大卡片 - 下一个大日子
-  Widget _buildHeroCard(BuildContext context, WidgetRef ref, Anniversary anniversary) {
+  Widget _buildHeroCard(
+    BuildContext context,
+    WidgetRef ref,
+    Anniversary anniversary,
+  ) {
     final dateFormat = DateFormat('yyyy年M月d日');
     final dateStr = dateFormat.format(anniversary.date);
 
@@ -254,10 +258,7 @@ class AnniversaryScreen extends ConsumerWidget {
               children: [
                 // 背景图片
                 Positioned.fill(
-                  child: Image.asset(
-                    'assets/images/bg.png',
-                    fit: BoxFit.cover,
-                  ),
+                  child: Image.asset('assets/images/bg.png', fit: BoxFit.cover),
                 ),
                 // 渐变遮罩
                 Positioned.fill(
@@ -289,7 +290,10 @@ class AnniversaryScreen extends ConsumerWidget {
                         Transform.rotate(
                           angle: -0.035,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
@@ -332,7 +336,10 @@ class AnniversaryScreen extends ConsumerWidget {
                         const SizedBox(height: 8),
                         // 倒计时
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(16),
@@ -347,7 +354,9 @@ class AnniversaryScreen extends ConsumerWidget {
                             textBaseline: TextBaseline.alphabetic,
                             children: [
                               Text(
-                                anniversary.isToday ? '🎉' : '${anniversary.daysUntil}',
+                                anniversary.isToday
+                                    ? '🎉'
+                                    : '${anniversary.daysUntil}',
                                 style: const TextStyle(
                                   fontSize: 48,
                                   fontWeight: FontWeight.w700,
@@ -370,7 +379,10 @@ class AnniversaryScreen extends ConsumerWidget {
                         const SizedBox(height: 8),
                         // 日期
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
@@ -455,12 +467,20 @@ class AnniversaryScreen extends ConsumerWidget {
   }
 
   // 即将到来的卡片
-  Widget _buildUpcomingCard(BuildContext context, WidgetRef ref, Anniversary anniversary) {
+  Widget _buildUpcomingCard(
+    BuildContext context,
+    WidgetRef ref,
+    Anniversary anniversary,
+  ) {
     final dateFormat = DateFormat('yyyy年M月d日');
     final dateStr = dateFormat.format(anniversary.date);
     final iconColor = _getIconColor(anniversary.type);
-    // 计算进度（假设最大 365 天）
-    final progress = 1 - (anniversary.daysUntil / 365).clamp(0.0, 1.0);
+    // 计算真实进度
+    final progress = _calculateProgress(anniversary);
+    // 调试：打印进度值
+    debugPrint(
+      '纪念日: ${anniversary.title}, 还有 ${anniversary.daysUntil} 天, 进度: $progress',
+    );
 
     return GestureDetector(
       onTap: () => _showAnniversaryOptions(context, ref, anniversary),
@@ -544,7 +564,10 @@ class AnniversaryScreen extends ConsumerWidget {
                 Transform.rotate(
                   angle: 0.05,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(12),
@@ -569,38 +592,14 @@ class AnniversaryScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 16),
-            // 进度条
-            Container(
-              height: 12,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: const Color(0xFFF0F0F0),
-                  width: 1,
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Stack(
-                  children: [
-                    FractionallySizedBox(
-                      widthFactor: progress,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: iconColor,
-                          borderRadius: BorderRadius.circular(6),
-                          border: const Border(
-                            right: BorderSide(
-                              color: Colors.white,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+            // 进度条 - 使用 LinearProgressIndicator
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 12,
+                backgroundColor: const Color(0xFFF5F5F5),
+                valueColor: AlwaysStoppedAnimation<Color>(iconColor),
               ),
             ),
           ],
@@ -610,7 +609,11 @@ class AnniversaryScreen extends ConsumerWidget {
   }
 
   // 已过去的卡片（美好回忆）
-  Widget _buildPastCard(BuildContext context, WidgetRef ref, Anniversary anniversary) {
+  Widget _buildPastCard(
+    BuildContext context,
+    WidgetRef ref,
+    Anniversary anniversary,
+  ) {
     final dateFormat = DateFormat('yyyy年M月d日');
     final dateStr = dateFormat.format(anniversary.date);
     final daysPast = -anniversary.daysUntil;
@@ -742,11 +745,7 @@ class AnniversaryScreen extends ConsumerWidget {
             ],
           ),
           child: const Center(
-            child: Icon(
-              Icons.add_rounded,
-              color: Colors.white,
-              size: 36,
-            ),
+            child: Icon(Icons.add_rounded, color: Colors.white, size: 36),
           ),
         ),
       ),
@@ -764,6 +763,47 @@ class AnniversaryScreen extends ConsumerWidget {
         return secondaryYellow;
       default:
         return secondaryBlue;
+    }
+  }
+
+  /// 计算纪念日进度
+  /// 进度表示：距离纪念日越近，进度越满
+  /// 对于周年循环纪念日：计算从上一个纪念日到下一个纪念日的进度
+  /// 对于一次性纪念日：基于剩余天数计算进度
+  double _calculateProgress(Anniversary anniversary) {
+    final daysUntil = anniversary.daysUntil;
+
+    // 如果是今天或已过去，进度满
+    if (daysUntil <= 0) return 1.0;
+
+    if (anniversary.isRecurring) {
+      // 周年循环纪念日：一年为一个周期(365天)
+      // 进度 = 1 - (剩余天数 / 365)
+      // 例如：还有 193 天，进度 = 1 - 193/365 ≈ 0.47
+      const cycledays = 365;
+      final progress = 1.0 - (daysUntil / cycledays);
+      return progress.clamp(0.0, 1.0);
+    } else {
+      // 一次性纪念日：基于创建日期到目标日期计算
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final targetDate = anniversary.date;
+      final createdDateTime = anniversary.createdDateTime;
+      final startDate = DateTime(
+        createdDateTime.year,
+        createdDateTime.month,
+        createdDateTime.day,
+      );
+
+      final totalDays = targetDate.difference(startDate).inDays;
+
+      // 如果总天数太小，使用剩余天数比例
+      if (totalDays <= 0) {
+        return 1.0;
+      }
+
+      final elapsedDays = today.difference(startDate).inDays;
+      return (elapsedDays / totalDays).clamp(0.0, 1.0);
     }
   }
 
@@ -908,9 +948,7 @@ class AnniversaryScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text(
           '删除纪念日',
           style: TextStyle(
@@ -962,9 +1000,7 @@ class _DotBackground extends StatelessWidget {
     return Positioned.fill(
       child: Container(
         color: AppColors.background,
-        child: CustomPaint(
-          painter: _DotPainter(),
-        ),
+        child: CustomPaint(painter: _DotPainter()),
       ),
     );
   }
