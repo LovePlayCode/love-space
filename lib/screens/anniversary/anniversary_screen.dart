@@ -282,7 +282,7 @@ class AnniversaryScreen extends ConsumerWidget {
                   left: 0,
                   right: 0,
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.fromLTRB(24, 34, 4, 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
